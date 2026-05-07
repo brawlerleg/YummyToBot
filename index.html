@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>FoodAI</title>
+<title>YummyToBot</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -693,7 +693,7 @@ body {
     <div class="profile-avatar" id="profile-avatar">?</div>
     <div>
       <div class="profile-name" id="profile-name">Пользователь</div>
-      <div class="profile-sub" id="profile-sub">FoodAI</div>
+      <div class="profile-sub" id="profile-sub">YummyToBot</div>
     </div>
   </div>
 
@@ -710,7 +710,7 @@ body {
   <div class="settings-row" onclick="openInBot()">
     <div class="settings-label">Открыть бота</div>
     <div class="settings-val">
-      <span>@foodai_bot</span>
+      <span>@YummyToBot</span>
       <span class="settings-arrow">›</span>
     </div>
   </div>
@@ -788,7 +788,7 @@ if (tg) {
     userId = u.id;
     document.getElementById('profile-name').textContent = (u.first_name || '') + ' ' + (u.last_name || '');
     document.getElementById('profile-avatar').textContent = (u.first_name || '?')[0].toUpperCase();
-    document.getElementById('profile-sub').textContent = u.username ? '@' + u.username : 'FoodAI';
+    document.getElementById('profile-sub').textContent = u.username ? '@' + u.username : 'YummyToBot';
   }
 }
 
