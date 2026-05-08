@@ -825,7 +825,12 @@ function getDateStr(daysAgo) {
 
 async function loadToday() {
   try {
-    const uid = userId || 'demo';
+    const uid = userId;  // ← убери || 'demo', userId должен быть числом из Telegram
+    if (!uid) {
+      todayMeals = [];
+      renderToday();
+      return;
+    }
     const res = await fetch(`${API}/meals-by-date?user_id=${uid}&date=${getDateStr(0)}`);
     if (!res.ok) throw new Error(res.status);
     const raw = await res.json();
@@ -894,7 +899,7 @@ function renderToday() {
 
 async function loadHistoryDay(daysAgo) {
   try {
-    const uid = userId || 'demo';
+    const uid = userId;
     const res = await fetch(`${API}/meals-by-date?user_id=${uid}&date=${getDateStr(daysAgo)}`);
     if (!res.ok) throw new Error(res.status);
     const raw = await res.json();
