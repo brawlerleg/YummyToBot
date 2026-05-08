@@ -770,7 +770,7 @@ body {
 </div>
 
 <script>
-const API = 'https://yummytobot.duckdns.org/api/stats';
+const API = 'https://yummytobot.duckdns.org';
 let tg = window.Telegram?.WebApp;
 let userId = null;
 let goal = parseInt(localStorage.getItem('kcal_goal') || '2000');
@@ -827,9 +827,12 @@ async function loadToday() {
   try {
     const uid = userId || 'demo';
     const res = await fetch(`${API}/meals-by-date?user_id=${uid}&date=${getDateStr(0)}`);
-    todayMeals = await res.json();
+    if (!res.ok) throw new Error(res.status);
+    const raw = await res.json();
+    todayMeals = Array.isArray(raw) ? raw : [];
   } catch(e) {
-    todayMeals = getDemoMeals();
+    console.warn('loadToday failed:', e);
+    todayMeals = [];
   }
   renderToday();
 }
@@ -893,9 +896,12 @@ async function loadHistoryDay(daysAgo) {
   try {
     const uid = userId || 'demo';
     const res = await fetch(`${API}/meals-by-date?user_id=${uid}&date=${getDateStr(daysAgo)}`);
-    historyMeals = await res.json();
+    if (!res.ok) throw new Error(res.status);
+    const raw = await res.json();
+    historyMeals = Array.isArray(raw) ? raw : [];
   } catch(e) {
-    historyMeals = daysAgo === 0 ? getDemoMeals() : [];
+    console.warn('loadHistoryDay failed:', e);
+    historyMeals = [];
   }
   const list = document.getElementById('history-meals-list');
   if (!historyMeals.length) {
