@@ -603,6 +603,27 @@ body {
   cursor: pointer;
   margin-top: 12px;
 }
+
+/* добавь в <style> */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 8px;
+  height: 16px;
+  margin-bottom: 8px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+}
 </style>
 </head>
 <body>
@@ -823,20 +844,29 @@ function getDateStr(daysAgo) {
   return d.toISOString().split('T')[0];
 }
 
+// замени начало loadToday
 async function loadToday() {
+  // Показываем скелетон сразу
+  document.getElementById('meals-list').innerHTML = `
+    <div class="skeleton-card">
+      <div class="skeleton" style="width:60%;height:14px"></div>
+      <div class="skeleton" style="width:40%;height:12px;margin-top:6px"></div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skeleton" style="width:70%;height:14px"></div>
+      <div class="skeleton" style="width:45%;height:12px;margin-top:6px"></div>
+    </div>
+  `;
+
   try {
-    const uid = userId;  // ← убери || 'demo', userId должен быть числом из Telegram
-    if (!uid) {
-      todayMeals = [];
-      renderToday();
-      return;
-    }
+    const uid = userId;
+    if (!uid) { todayMeals = []; renderToday(); return; }
     const res = await fetch(`${API}/meals-by-date?user_id=${uid}&date=${getDateStr(0)}`);
     if (!res.ok) throw new Error(res.status);
     const raw = await res.json();
     todayMeals = Array.isArray(raw) ? raw : [];
   } catch(e) {
-    console.warn('loadToday failed:', e);
+    console.warn('loadToday:', e);
     todayMeals = [];
   }
   renderToday();
