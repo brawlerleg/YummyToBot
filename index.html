@@ -639,9 +639,25 @@ let selectedDay = 0, currentDateOffset = 0, currentMealId = null;
 const CIRC = 2 * Math.PI * 46; // 289.0
 
 // ─── INIT TG ───
+function parseTgUser() {
+  // Способ 1: initDataUnsafe (работает в большинстве клиентов)
+  const unsafe = tg?.initDataUnsafe?.user;
+  if (unsafe?.id) return unsafe;
+
+  // Способ 2: парсим initData вручную (надёжнее)
+  try {
+    const raw = tg?.initData || '';
+    const params = new URLSearchParams(raw);
+    const userStr = params.get('user');
+    if (userStr) return JSON.parse(decodeURIComponent(userStr));
+  } catch(e) {}
+
+  return null;
+}
+
 if (tg) {
   tg.ready(); tg.expand();
-  const u = tg.initDataUnsafe?.user;
+  const u = parseTgUser();
   if (u) {
     userId = String(u.id);
     document.getElementById('profile-name').textContent =
@@ -652,6 +668,9 @@ if (tg) {
       u.username ? '@' + u.username : 'YummyToBot';
   }
 }
+
+// DEBUG: раскомментируй чтобы проверить что userId получен
+// console.log('userId:', userId, 'initData:', tg?.initData?.slice(0,80));
 
 // ─── HELPERS ───
 function getDateStr(daysAgo) {
@@ -727,10 +746,17 @@ async function loadToday() {
     </div>`;
   try {
     if (!userId) throw new Error('no user');
-    const res = await fetch(`${API}/meals-by-date?user_id=${userId}&date=${getDateStr(currentDateOffset)}`);
-    if (!res.ok) throw new Error(res.status);
-    todayMeals = await res.json();
-  } catch { todayMeals = []; }
+    const url = `${API}/meals-by-date?user_id=${userId}&date=${getDateStr(currentDateOffset)}`;
+    console.log('[YummyToBot] loadToday URL:', url);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const raw = await res.json();
+    console.log('[YummyToBot] meals response:', raw);
+    todayMeals = Array.isArray(raw) ? raw : [];
+  } catch(e) {
+    console.warn('[YummyToBot] loadToday error:', e);
+    todayMeals = [];
+  }
   renderToday();
 }
 
