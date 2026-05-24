@@ -128,7 +128,7 @@
       align-items:center;justify-content:center;color:#fff;
     }
     .ring-kcal{font-size:26px;font-weight:900;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.15);}
-    .ring-label{font-size:14px;font-weight:700;opacity:.85;}
+    .ring-label{font-size:11px;font-weight:700;opacity:.85;}
     .macro-mini{display:flex;flex-direction:column;gap:10px;}
     .macro-mini-item{display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.12);}
     .macro-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
@@ -283,18 +283,14 @@
   <!-- ════════════ PAGE: DIARY ════════════ -->
   <div class="page active" id="page-diary">
 
-        <div class="page-header">
-        <div class="header-top">
-            <div class="logo-wrap">
-                 <img 
-                    src="logo.png" 
-                    alt="🍉"
-                    style="width:44px;height:44px;border-radius:14px;"
-                 />
-            <div class="logo-text">YummyTo<span>Дневник питания</span></div>
-            </div>
-            <div class="header-badge glass" id="streak-badge">🔥 — дней</div>
+    <div class="page-header">
+      <div class="header-top">
+        <div class="logo-wrap">
+          <div class="logo-img glass">🍉</div>
+          <div class="logo-text">YummyTo<span>Дневник питания</span></div>
         </div>
+        <div class="header-badge glass" id="streak-badge">🔥 — дней</div>
+      </div>
       <div class="diary-header-inner">
         <div class="calorie-block">
           <div class="ring-wrap">
@@ -362,11 +358,7 @@
     <div class="page-header">
       <div class="header-top">
         <div class="logo-wrap">
-                           <img 
-                    src="logo.png" 
-                    alt="🍉"
-                    style="width:44px;height:44px;border-radius:14px;"
-                 />
+          <div class="logo-img glass">🍉</div>
           <div class="logo-text">YummyTo<span>Аналитика</span></div>
         </div>
       </div>
@@ -435,11 +427,7 @@
     <div class="page-header">
       <div class="header-top">
         <div class="logo-wrap">
-                           <img 
-                    src="logo.png" 
-                    alt="🍉"
-                    style="width:44px;height:44px;border-radius:14px;"
-                 />
+          <div class="logo-img glass">🍉</div>
           <div class="logo-text">YummyTo<span>Рейтинг</span></div>
         </div>
       </div>
@@ -455,11 +443,7 @@
     <div class="page-header">
       <div class="header-top">
         <div class="logo-wrap">
-                           <img 
-                    src="logo.png" 
-                    alt="🍉"
-                    style="width:44px;height:44px;border-radius:14px;"
-                 />
+          <div class="logo-img glass">🍉</div>
           <div class="logo-text">YummyTo<span>Профиль</span></div>
         </div>
       </div>
@@ -512,7 +496,7 @@
 
 <script>
 const API = 'https://brawlerleg.github.io/YummyToBot'; // proxy base — заменить на реальный если нужно
-const BASE = 'https://yummytobot.duckdns.org/api/'; // ← замени на адрес сервера с dashboard_api.py
+const BASE = 'https://YOUR_SERVER/'; // ← замени на адрес сервера с dashboard_api.py
 
 /* ── utils ── */
 const $ = id => document.getElementById(id);
@@ -656,7 +640,7 @@ async function loadDiary(){
     const circ=345;
     $('ring-fill').style.strokeDashoffset = circ - circ*pct;
     $('ring-kcal').textContent = Math.round(totalKcal);
-    $('ring-label').textContent = `из ${goal}`;
+    $('ring-label').textContent = `из ${goal} ккал`;
 
     // macros
     $('m-protein').textContent=Math.round(totalP);
@@ -829,6 +813,17 @@ async function loadAnalytics(){
   }
 }
 
+/* ── display name helper ── */
+function displayName(username){
+  if(!username) return 'Игрок';
+  const clean = username.replace(/^@/,'');
+  if(clean.length<=2) return clean[0]+'***';
+  const first = clean.slice(0,2);
+  const last  = clean.slice(-1);
+  const stars = '*'.repeat(Math.min(clean.length-3,4));
+  return first+stars+last;
+}
+
 /* ══════════════ LEADERBOARD ══════════════ */
 async function loadLeaderboard(){
   try{
@@ -839,7 +834,7 @@ async function loadLeaderboard(){
       return `<div class="lb-card glass-card">
         <div class="lb-rank">${MEDALS[i]||`${i+1}`}</div>
         <div class="lb-info">
-          <div class="lb-username">@${u.username}</div>
+          <div class="lb-username">${displayName(u.username)}</div>
           <div class="lb-meta">🔥 ${u.streak_days} дней · 🏅 ${u.ach_count} ачивок</div>
           <span class="lb-level-badge">${lv.emoji} ${lv.name}</span>
         </div>
@@ -867,7 +862,7 @@ async function loadProfile(){
     const pctXP=lv.nextXp?Math.min((u.xp-lv.minXp)/(lv.nextXp-lv.minXp),1)*100:100;
 
     $('p-avatar').textContent=lv.emoji;
-    $('p-name').textContent=`@${u.username}`;
+    $('p-name').textContent=`@${u.username}`;  // профиль — себе можно показывать полностью
     $('p-level').textContent=`${lv.emoji} ${lv.name} · Уровень ${u.level||1}`;
     $('p-xp-bar').style.width=pctXP+'%';
     $('p-xp-txt').textContent=`${u.xp} / ${lv.nextXp||'MAX'} XP`;
