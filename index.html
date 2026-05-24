@@ -20,8 +20,6 @@
       background-attachment:fixed;
       color:var(--text);display:flex;flex-direction:column;
     }
-
-    /* ── GLASS ── */
     .glass{
       background:rgba(255,255,255,0.22);
       backdrop-filter:blur(18px) saturate(160%);
@@ -36,13 +34,9 @@
       border:1px solid rgba(255,255,255,0.9);
       box-shadow:0 4px 24px rgba(2,136,209,0.13),inset 0 1px 0 rgba(255,255,255,0.8);
     }
-
-    /* ── PAGES ── */
     #app{flex:1;overflow:hidden;display:flex;flex-direction:column;}
     .page{display:none;flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:90px;}
     .page.active{display:block;}
-
-    /* ── BOTTOM NAV ── */
     .bottom-nav{
       position:fixed;bottom:0;left:0;right:0;
       background:rgba(255,255,255,0.88);
@@ -62,88 +56,39 @@
     .nav-item.active{color:var(--blue-dark);}
     .nav-icon{font-size:24px;}
     .nav-item.active .nav-icon{filter:drop-shadow(0 2px 6px rgba(2,136,209,.4));}
-
-    /* ── SHARED HEADER ── */
-    .page-header{
-      padding:20px 20px 28px;position:relative;overflow:hidden;
-    }
-    .page-header::before{
-      content:'';position:absolute;top:-40px;right:-30px;
-      width:180px;height:180px;background:rgba(255,255,255,.1);border-radius:50%;pointer-events:none;
-    }
-    .page-header::after{
-      content:'';position:absolute;bottom:10px;left:-50px;
-      width:140px;height:140px;background:rgba(255,255,255,.07);border-radius:50%;pointer-events:none;
-    }
+    .page-header{padding:20px 20px 28px;position:relative;overflow:hidden;}
+    .page-header::before{content:'';position:absolute;top:-40px;right:-30px;width:180px;height:180px;background:rgba(255,255,255,.1);border-radius:50%;pointer-events:none;}
+    .page-header::after{content:'';position:absolute;bottom:10px;left:-50px;width:140px;height:140px;background:rgba(255,255,255,.07);border-radius:50%;pointer-events:none;}
     .header-top{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;}
     .logo-wrap{display:flex;align-items:center;gap:10px;}
-    .logo-img{
-      width:44px;height:44px;border-radius:14px;
-      display:flex;align-items:center;justify-content:center;font-size:28px;
-    }
     .logo-text{color:#fff;font-weight:900;font-size:20px;line-height:1;letter-spacing:-.3px;text-shadow:0 2px 8px rgba(0,0,0,.15);}
     .logo-text span{font-weight:600;opacity:.85;font-size:13px;display:block;}
-    .header-badge{
-      border-radius:30px;padding:7px 15px;color:#fff;
-      font-weight:800;font-size:14px;display:flex;align-items:center;gap:5px;
-      text-shadow:0 1px 4px rgba(0,0,0,.1);
-    }
-    .page-title{
-      color:#fff;font-weight:900;font-size:22px;margin-top:16px;
-      position:relative;z-index:1;text-shadow:0 2px 8px rgba(0,0,0,.15);
-    }
-
-    /* ── LOADING / ERROR ── */
-    .loader{
-      display:flex;align-items:center;justify-content:center;
-      padding:40px 20px;color:rgba(255,255,255,.7);font-weight:700;font-size:15px;gap:10px;
-    }
-    .spinner{
-      width:22px;height:22px;border:3px solid rgba(255,255,255,.3);
-      border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;
-    }
+    .header-badge{border-radius:30px;padding:7px 15px;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;gap:5px;text-shadow:0 1px 4px rgba(0,0,0,.1);}
+    .page-title{color:#fff;font-weight:900;font-size:22px;margin-top:16px;position:relative;z-index:1;text-shadow:0 2px 8px rgba(0,0,0,.15);}
+    .loader{display:flex;align-items:center;justify-content:center;padding:40px 20px;color:rgba(255,255,255,.7);font-weight:700;font-size:15px;gap:10px;}
+    .spinner{width:22px;height:22px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg);}}
-    .error-msg{
-      margin:12px 14px;padding:14px 16px;border-radius:var(--radius);
-      background:rgba(239,83,80,.15);border:1px solid rgba(239,83,80,.3);
-      color:#b71c1c;font-weight:700;font-size:13px;
-    }
+    .error-msg{margin:12px 14px;padding:14px 16px;border-radius:var(--radius);background:rgba(239,83,80,.15);border:1px solid rgba(239,83,80,.3);color:#b71c1c;font-weight:700;font-size:13px;}
 
-    /* ═══════════════════════════════════
-       PAGE: DIARY
-    ═══════════════════════════════════ */
+    /* DIARY */
     .diary-header-inner{margin-top:18px;position:relative;z-index:1;}
     .calorie-block{display:flex;align-items:center;justify-content:center;gap:24px;}
     .ring-wrap{position:relative;width:130px;height:130px;flex-shrink:0;}
     .ring-wrap svg{transform:rotate(-90deg);}
     .ring-bg{fill:none;stroke:rgba(255,255,255,.25);stroke-width:10;}
-    .ring-fill{
-      fill:none;stroke:#fff;stroke-width:10;stroke-linecap:round;
-      stroke-dasharray:345;stroke-dashoffset:345;
-      transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1);
-      filter:drop-shadow(0 0 8px rgba(255,255,255,.7));
-    }
-    .ring-center{
-      position:absolute;inset:0;display:flex;flex-direction:column;
-      align-items:center;justify-content:center;color:#fff;
-    }
+    .ring-fill{fill:none;stroke:#fff;stroke-width:10;stroke-linecap:round;stroke-dasharray:345;stroke-dashoffset:345;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 0 8px rgba(255,255,255,.7));}
+    .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;}
     .ring-kcal{font-size:26px;font-weight:900;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.15);}
-    .ring-label{font-size:11px;font-weight:700;opacity:.85;}
+    .ring-label{font-size:14px;font-weight:700;opacity:.85;}
     .macro-mini{display:flex;flex-direction:column;gap:10px;}
     .macro-mini-item{display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.12);}
     .macro-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
     .macro-mini-bar{width:76px;height:5px;background:rgba(255,255,255,.25);border-radius:10px;overflow:hidden;}
     .macro-mini-bar-fill{height:100%;border-radius:10px;}
-
     .date-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 10px;}
-    .date-nav button{
-      border:none;border-radius:13px;width:38px;height:38px;
-      font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-      color:var(--blue-dark);font-weight:900;transition:transform .1s;
-    }
+    .date-nav button{border:none;border-radius:13px;width:38px;height:38px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue-dark);font-weight:900;transition:transform .1s;}
     .date-nav button:active{transform:scale(.92);}
     .date-today{font-weight:800;font-size:16px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.2);}
-
     .xp-card{margin:0 14px 10px;border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:14px;}
     .xp-emoji{font-size:32px;}
     .xp-info{flex:1;}
@@ -151,7 +96,6 @@
     .xp-bar-wrap{background:rgba(2,136,209,.12);border-radius:8px;height:7px;margin-top:6px;overflow:hidden;}
     .xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-dark),var(--blue));border-radius:8px;transition:width .8s ease;}
     .xp-pts{font-size:12px;color:var(--muted);font-weight:700;margin-top:3px;}
-
     .section-title{padding:6px 20px 10px;font-size:13px;font-weight:800;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.8px;}
     .meal-list{padding:0 14px;display:flex;flex-direction:column;gap:10px;}
     .meal-card{border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .12s;}
@@ -166,17 +110,8 @@
     .tag-f{background:rgba(255,167,38,.15);color:#e65100;}
     .tag-c{background:rgba(41,182,246,.15);color:#0277bd;}
     .meal-kcal{font-size:16px;font-weight:900;color:var(--blue-dark);flex-shrink:0;text-align:right;}
-
-    .add-btn{
-      margin:16px 14px 0;
-      background:linear-gradient(135deg,#0277bd,#29b6f6);color:#fff;
-      border:none;border-radius:var(--radius);width:calc(100% - 28px);
-      padding:16px;font-size:16px;font-weight:800;font-family:'Nunito',sans-serif;
-      cursor:pointer;box-shadow:0 6px 24px rgba(2,136,209,.45),inset 0 1px 0 rgba(255,255,255,.3);
-      display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s;
-    }
+    .add-btn{margin:16px 14px 0;background:linear-gradient(135deg,#0277bd,#29b6f6);color:#fff;border:none;border-radius:var(--radius);width:calc(100% - 28px);padding:16px;font-size:16px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;box-shadow:0 6px 24px rgba(2,136,209,.45),inset 0 1px 0 rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s;}
     .add-btn:active{transform:scale(.97);}
-
     .weekly-card{margin:14px 14px 0;border-radius:var(--radius);padding:16px 18px;}
     .weekly-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;}
     .weekly-bars{display:flex;align-items:flex-end;gap:6px;height:50px;}
@@ -187,14 +122,10 @@
     .day-label{font-size:10px;font-weight:700;color:var(--muted);}
     .day-label.today{color:var(--blue-dark);}
 
-    /* ═══════════════════════════════════
-       PAGE: ANALYTICS
-    ═══════════════════════════════════ */
+    /* ANALYTICS */
     .analytics-grid{padding:0 14px;display:flex;flex-direction:column;gap:12px;}
     .an-card{border-radius:var(--radius);padding:16px 18px;}
     .an-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px;}
-
-    /* КБЖУ donuts row */
     .kbju-row{display:flex;justify-content:space-around;align-items:center;}
     .kbju-item{display:flex;flex-direction:column;align-items:center;gap:6px;}
     .donut-wrap{position:relative;width:72px;height:72px;}
@@ -204,13 +135,9 @@
     .donut-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
     .donut-val{font-size:15px;font-weight:900;line-height:1;}
     .donut-unit{font-size:9px;font-weight:700;color:var(--muted);}
-    .kbju-name{font-size:12px;font-weight:800;color:var(--muted);}
-
-    /* line chart */
+    .kbju-name{font-size:12px;font-weight:800;}
     .line-chart-wrap{width:100%;overflow-x:auto;}
     .line-chart-svg{display:block;}
-
-    /* top dishes */
     .dish-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(2,136,209,.07);}
     .dish-row:last-child{border-bottom:none;}
     .dish-rank{font-size:18px;width:28px;text-align:center;flex-shrink:0;}
@@ -219,14 +146,9 @@
     .dish-bar-wrap{width:60px;height:6px;background:rgba(2,136,209,.1);border-radius:10px;overflow:hidden;}
     .dish-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-dark),var(--blue));border-radius:10px;}
 
-    /* ═══════════════════════════════════
-       PAGE: LEADERBOARD
-    ═══════════════════════════════════ */
+    /* LEADERBOARD */
     .lb-list{padding:0 14px;display:flex;flex-direction:column;gap:10px;}
-    .lb-card{
-      border-radius:var(--radius);padding:14px 16px;
-      display:flex;align-items:center;gap:14px;
-    }
+    .lb-card{border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;}
     .lb-rank{font-size:22px;width:36px;text-align:center;flex-shrink:0;}
     .lb-info{flex:1;min-width:0;}
     .lb-username{font-weight:800;font-size:15px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -234,42 +156,29 @@
     .lb-right{text-align:right;flex-shrink:0;}
     .lb-xp{font-size:17px;font-weight:900;color:var(--blue-dark);}
     .lb-xp-label{font-size:10px;font-weight:700;color:var(--muted);}
-    .lb-level-badge{
-      display:inline-block;margin-top:4px;padding:2px 8px;border-radius:8px;
-      font-size:11px;font-weight:800;background:rgba(2,136,209,.12);color:var(--blue-dark);
-    }
+    .lb-level-badge{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:800;background:rgba(2,136,209,.12);color:var(--blue-dark);}
 
-    /* ═══════════════════════════════════
-       PAGE: PROFILE
-    ═══════════════════════════════════ */
+    /* PROFILE */
     .profile-content{padding:0 14px;display:flex;flex-direction:column;gap:12px;}
-    .profile-hero{
-      border-radius:var(--radius);padding:20px;text-align:center;
-    }
+    .profile-hero{border-radius:var(--radius);padding:20px;text-align:center;}
     .profile-avatar{font-size:56px;line-height:1;margin-bottom:10px;}
     .profile-name{font-weight:900;font-size:20px;color:var(--text);}
     .profile-level{font-size:14px;font-weight:700;color:var(--blue-dark);margin-top:4px;}
     .profile-xp-bar-wrap{background:rgba(2,136,209,.12);border-radius:10px;height:8px;margin:12px 0 4px;overflow:hidden;}
     .profile-xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-dark),var(--blue));border-radius:10px;transition:width .8s ease;}
     .profile-xp-txt{font-size:12px;font-weight:700;color:var(--muted);}
-
     .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
     .stat-item{border-radius:16px;padding:14px;text-align:center;}
     .stat-val{font-size:22px;font-weight:900;color:var(--blue-dark);}
     .stat-label{font-size:11px;font-weight:700;color:var(--muted);margin-top:2px;}
-
     .goals-card{border-radius:var(--radius);padding:16px 18px;}
     .goals-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;}
     .goal-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(2,136,209,.07);}
     .goal-row:last-child{border-bottom:none;}
     .goal-key{font-size:13px;font-weight:700;color:var(--muted);}
     .goal-val{font-size:14px;font-weight:800;color:var(--text);}
-
     .ach-grid{display:flex;flex-wrap:wrap;gap:10px;}
-    .ach-item{
-      border-radius:14px;padding:10px 14px;
-      display:flex;align-items:center;gap:8px;flex:1;min-width:140px;
-    }
+    .ach-item{border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:8px;flex:1;min-width:140px;}
     .ach-icon{font-size:24px;}
     .ach-info{flex:1;min-width:0;}
     .ach-name{font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -280,13 +189,12 @@
 <body>
 <div id="app">
 
-  <!-- ════════════ PAGE: DIARY ════════════ -->
+  <!-- DIARY -->
   <div class="page active" id="page-diary">
-
     <div class="page-header">
       <div class="header-top">
         <div class="logo-wrap">
-          <img src="logo.png" style="width:44px;height:44px;border-radius:14px;" />
+          <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
           <div class="logo-text">YummyTo<span>Дневник питания</span></div>
         </div>
         <div class="header-badge glass" id="streak-badge">🔥 — дней</div>
@@ -353,22 +261,19 @@
     </div>
   </div>
 
-  <!-- ════════════ PAGE: ANALYTICS ════════════ -->
+  <!-- ANALYTICS -->
   <div class="page" id="page-analytics">
     <div class="page-header">
       <div class="header-top">
         <div class="logo-wrap">
-          <img src="logo.png" style="width:44px;height:44px;border-radius:14px;" />
+          <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
           <div class="logo-text">YummyTo<span>Аналитика</span></div>
         </div>
       </div>
       <div class="page-title">📊 Анализ питания</div>
     </div>
-
     <div id="analytics-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
     <div class="analytics-grid" id="analytics-content" style="display:none">
-
-      <!-- КБЖУ avg -->
       <div class="an-card glass-card">
         <div class="an-title">КБЖУ за 7 дней (среднее)</div>
         <div class="kbju-row">
@@ -404,55 +309,47 @@
           </div>
         </div>
       </div>
-
-      <!-- Калории по дням -->
       <div class="an-card glass-card">
         <div class="an-title">Калории по дням (14 дней)</div>
         <div class="line-chart-wrap">
           <svg class="line-chart-svg" id="line-chart" height="120"></svg>
         </div>
       </div>
-
-      <!-- Топ блюд -->
       <div class="an-card glass-card">
         <div class="an-title">🍽 Топ-10 блюд</div>
         <div id="top-dishes"></div>
       </div>
-
     </div>
   </div>
 
-  <!-- ════════════ PAGE: LEADERBOARD ════════════ -->
+  <!-- LEADERBOARD -->
   <div class="page" id="page-leaderboard">
     <div class="page-header">
       <div class="header-top">
         <div class="logo-wrap">
-          <img src="logo.png" style="width:44px;height:44px;border-radius:14px;" />
+          <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
           <div class="logo-text">YummyTo<span>Рейтинг</span></div>
         </div>
       </div>
       <div class="page-title">🏆 Лидерборд</div>
     </div>
-
     <div id="lb-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
     <div class="lb-list" id="lb-list" style="display:none"></div>
   </div>
 
-  <!-- ════════════ PAGE: PROFILE ════════════ -->
+  <!-- PROFILE -->
   <div class="page" id="page-profile">
     <div class="page-header">
       <div class="header-top">
         <div class="logo-wrap">
-          <img src="logo.png" style="width:44px;height:44px;border-radius:14px;" />
+          <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
           <div class="logo-text">YummyTo<span>Профиль</span></div>
         </div>
       </div>
       <div class="page-title">👤 Мой профиль</div>
     </div>
-
     <div id="profile-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
     <div class="profile-content" id="profile-content" style="display:none">
-
       <div class="profile-hero glass-card">
         <div class="profile-avatar" id="p-avatar">🥚</div>
         <div class="profile-name" id="p-name">—</div>
@@ -460,45 +357,30 @@
         <div class="profile-xp-bar-wrap"><div class="profile-xp-bar-fill" id="p-xp-bar" style="width:0%"></div></div>
         <div class="profile-xp-txt" id="p-xp-txt">— XP</div>
       </div>
-
       <div class="stats-grid" id="stats-grid"></div>
-
       <div class="goals-card glass-card">
         <div class="goals-title">Мои цели и параметры</div>
         <div id="goals-rows"></div>
       </div>
-
       <div class="goals-card glass-card">
         <div class="goals-title">🏅 Достижения</div>
         <div class="ach-grid" id="ach-grid"></div>
       </div>
-
     </div>
   </div>
 
-</div><!-- /#app -->
+</div>
 
-<!-- ── BOTTOM NAV ── -->
 <div class="bottom-nav">
-  <div class="nav-item active" data-page="diary">
-    <div class="nav-icon">📋</div>Дневник
-  </div>
-  <div class="nav-item" data-page="analytics">
-    <div class="nav-icon">📊</div>Анализ
-  </div>
-  <div class="nav-item" data-page="leaderboard">
-    <div class="nav-icon">🏆</div>Рейтинг
-  </div>
-  <div class="nav-item" data-page="profile">
-    <div class="nav-icon">👤</div>Профиль
-  </div>
+  <div class="nav-item active" data-page="diary"><div class="nav-icon">📋</div>Дневник</div>
+  <div class="nav-item" data-page="analytics"><div class="nav-icon">📊</div>Анализ</div>
+  <div class="nav-item" data-page="leaderboard"><div class="nav-icon">🏆</div>Рейтинг</div>
+  <div class="nav-item" data-page="profile"><div class="nav-icon">👤</div>Профиль</div>
 </div>
 
 <script>
-const API = 'https://brawlerleg.github.io/YummyToBot'; // proxy base — заменить на реальный если нужно
-const BASE = 'https://yummytobot.duckdns.org/api/'; // ← замени на адрес сервера с dashboard_api.py
+const BASE = 'https://yummytobot.duckdns.org/api/';
 
-/* ── utils ── */
 const $ = id => document.getElementById(id);
 const DAYS_SHORT = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
@@ -519,7 +401,7 @@ const ACHIEVEMENTS = {
 };
 
 function getLevel(xp){
-  let cur=LEVELS[0], nxt=LEVELS[1];
+  let cur=LEVELS[0],nxt=LEVELS[1];
   for(let i=0;i<LEVELS.length;i++){
     if(xp>=LEVELS[i][0]){cur=LEVELS[i];nxt=LEVELS[i+1]||null;}
   }
@@ -527,52 +409,59 @@ function getLevel(xp){
 }
 
 async function api(path){
-  const r = await fetch(BASE+path);
+  const r=await fetch(BASE+path);
   if(!r.ok) throw new Error(r.status);
   return r.json();
 }
 
-/* ── NAV ── */
-let currentPage = 'diary';
-const pageLoaded = {};
+/* ── displayName для лидерборда:
+   Берёт first_name из API (если есть), иначе берёт username
+   и показывает только первое слово с заглавной буквы.
+   username никогда не светится полностью. ── */
+function displayName(u){
+  // если API вернул first_name — используем его
+  if(u.first_name && u.first_name.trim()){
+    // показываем имя + первую букву фамилии если есть
+    const parts = u.first_name.trim().split(' ');
+    if(parts.length>=2) return `${parts[0]} ${parts[1][0]}.`;
+    return parts[0];
+  }
+  // fallback: username без @ и только первые символы
+  const clean=(u.username||'Игрок').replace(/^@/,'');
+  if(clean.length<=3) return clean;
+  return clean[0].toUpperCase()+clean.slice(1,3)+'***';
+}
 
+/* ── NAV ── */
+const pageLoaded={};
 document.querySelectorAll('.nav-item').forEach(el=>{
   el.addEventListener('click',()=>{
-    const pg = el.dataset.page;
+    const pg=el.dataset.page;
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     el.classList.add('active');
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById('page-'+pg).classList.add('active');
-    currentPage = pg;
-    if(!pageLoaded[pg]) loadPage(pg);
+    if(!pageLoaded[pg]){pageLoaded[pg]=true;loadPage(pg);}
   });
 });
-
 function loadPage(pg){
-  pageLoaded[pg]=true;
-  if(pg==='diary') loadDiary();
   if(pg==='analytics') loadAnalytics();
   if(pg==='leaderboard') loadLeaderboard();
   if(pg==='profile') loadProfile();
 }
 
-/* ══════════════ DIARY ══════════════ */
-let dateOffset = 0;
-let currentUser = null; // будет заполнен из TG или из users list
-
-function formatDate(offset){
-  const d=new Date(); d.setDate(d.getDate()+offset);
-  return d;
-}
-function dateStr(d){ return d.toISOString().split('T')[0]; }
+/* ── DIARY ── */
+let dateOffset=0;
+function formatDate(offset){const d=new Date();d.setDate(d.getDate()+offset);return d;}
+function dateStr(d){return d.toISOString().split('T')[0];}
 function dateLabelStr(d,offset){
   if(offset===0) return `Сегодня, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
   if(offset===-1) return `Вчера, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
   return `${DAYS_SHORT[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
 }
 
-$('btn-prev').onclick=()=>{ dateOffset--; loadDiary(); };
-$('btn-next').onclick=()=>{ if(dateOffset<0){dateOffset++;loadDiary();} };
+$('btn-prev').onclick=()=>{dateOffset--;loadDiary();};
+$('btn-next').onclick=()=>{if(dateOffset<0){dateOffset++;loadDiary();}};
 
 const MEAL_ICONS=['🥣','🍳','🥗','🍗','🥩','🍝','🍜','🥘','🥙','🌮','🥪','🍱','🥞','🍚','🍲'];
 function mealIcon(name){
@@ -594,55 +483,67 @@ function mealTimeLabel(isoStr){
   if(!isoStr) return '';
   const d=new Date(isoStr);
   const h=d.getHours();
-  const t=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  const t=`${String(h).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   if(h<11) return `🌅 Завтрак · ${t}`;
   if(h<14) return `☀️ Обед · ${t}`;
   if(h<17) return `🌤 Перекус · ${t}`;
   return `🌙 Ужин · ${t}`;
 }
 
-async function loadDiary(){
-  const d = formatDate(dateOffset);
-  $('date-label').textContent = dateLabelStr(d,dateOffset);
+let _usersCache=null;
+async function getUsers(){
+  if(_usersCache) return _usersCache;
+  _usersCache=await api('users');
+  return _usersCache;
+}
+let _resolvedUid=null;
+async function resolveUserId(){
+  if(_resolvedUid) return _resolvedUid;
+  const tgUser=window.Telegram?.WebApp?.initDataUnsafe?.user;
+  if(tgUser?.username){
+    const users=await getUsers();
+    const found=users.find(u=>u.username===tgUser.username||u.username==='@'+tgUser.username);
+    if(found){_resolvedUid=found.id;return found.id;}
+  }
+  const users=await getUsers();
+  _resolvedUid=users[0]?.id||1;
+  return _resolvedUid;
+}
+async function getUserData(uid){
+  const users=await getUsers();
+  return users.find(u=>u.id===uid)||null;
+}
+async function getCalorieGoal(uid){
+  const u=await getUserData(uid||await resolveUserId());
+  return u?.calorie_goal||2000;
+}
+async function getUserStreak(){
+  try{const uid=await resolveUserId();const u=await getUserData(uid);return u?.streak_days||0;}
+  catch{return 0;}
+}
 
-  // stats for ring + streak
+async function loadDiary(){
+  const d=formatDate(dateOffset);
+  $('date-label').textContent=dateLabelStr(d,dateOffset);
   try{
-    const stats = await api('stats');
-    // streak
-    const streakUser = await getUserStreak();
-    $('streak-badge').textContent = `🔥 ${streakUser} дней`;
-    // ring — kcal today from stats
-    if(dateOffset===0){
-      const goal = await getCalorieGoal();
-      const eaten = stats.avg_kcal * stats.active_today || 0; // approximation
-      // better: use meals-by-date sum
-    }
+    const streakDays=await getUserStreak();
+    $('streak-badge').textContent=`🔥 ${streakDays} дней`;
   }catch(e){}
 
-  // meals by date for current user
   $('diary-loader').style.display='flex';
   $('meal-list').style.display='none';
   try{
-    const uid = await resolveUserId();
-    const meals = await api(`meals-by-date?user_id=${uid}&date=${dateStr(d)}`);
+    const uid=await resolveUserId();
+    const meals=await api(`meals-by-date?user_id=${uid}&date=${dateStr(d)}`);
 
     let totalKcal=0,totalP=0,totalF=0,totalC=0;
-    meals.forEach(m=>{
-      totalKcal+=m.calories_kcal||0;
-      totalP+=m.protein_g||0;
-      totalF+=m.fat_g||0;
-      totalC+=m.carbs_g||0;
-    });
+    meals.forEach(m=>{totalKcal+=m.calories_kcal||0;totalP+=m.protein_g||0;totalF+=m.fat_g||0;totalC+=m.carbs_g||0;});
 
-    // ring
-    const goal = await getCalorieGoal(uid);
-    const pct = goal>0?Math.min(totalKcal/goal,1):0;
-    const circ=345;
-    $('ring-fill').style.strokeDashoffset = circ - circ*pct;
-    $('ring-kcal').textContent = Math.round(totalKcal);
-    $('ring-label').textContent = `из ${goal} ккал`;
-
-    // macros
+    const goal=await getCalorieGoal(uid);
+    const pct=goal>0?Math.min(totalKcal/goal,1):0;
+    $('ring-fill').style.strokeDashoffset=345-345*pct;
+    $('ring-kcal').textContent=Math.round(totalKcal);
+    $('ring-label').textContent=`из ${goal}`;
     $('m-protein').textContent=Math.round(totalP);
     $('m-fat').textContent=Math.round(totalF);
     $('m-carbs').textContent=Math.round(totalC);
@@ -650,12 +551,10 @@ async function loadDiary(){
     $('bar-fat').style.width=Math.min(totalF/70*100,100)+'%';
     $('bar-carbs').style.width=Math.min(totalC/250*100,100)+'%';
 
-    // render meal cards
-    const ml = $('meal-list');
-    if(meals.length===0){
-      ml.innerHTML='<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Нет приёмов пищи за этот день 🍽</div>';
-    } else {
-      ml.innerHTML = meals.map(m=>`
+    const ml=$('meal-list');
+    ml.innerHTML=meals.length===0
+      ?'<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Нет приёмов пищи за этот день 🍽</div>'
+      :meals.map(m=>`
         <div class="meal-card glass-card">
           <div class="meal-icon">${mealIcon(m.dish_name)}</div>
           <div class="meal-info">
@@ -668,34 +567,30 @@ async function loadDiary(){
             </div>
           </div>
           <div class="meal-kcal">${Math.round(m.calories_kcal)}<br><span style="font-size:11px;color:var(--muted);font-weight:700">ккал</span></div>
-        </div>
-      `).join('');
-    }
+        </div>`).join('');
+
     $('diary-loader').style.display='none';
     ml.style.display='flex';
 
-    // XP card
-    const user = await getUserData(uid);
+    const user=await getUserData(uid);
     if(user){
-      const lv = getLevel(user.xp||0);
+      const lv=getLevel(user.xp||0);
       $('xp-emoji').textContent=lv.emoji;
       $('xp-level-name').textContent=`${lv.emoji} ${lv.name} · Ур. ${user.level||1}`;
-      const pctXP = lv.nextXp ? Math.min((user.xp-lv.minXp)/(lv.nextXp-lv.minXp),1)*100 : 100;
+      const pctXP=lv.nextXp?Math.min((user.xp-lv.minXp)/(lv.nextXp-lv.minXp),1)*100:100;
       $('xp-bar').style.width=pctXP+'%';
       $('xp-pts').textContent=`${user.xp} / ${lv.nextXp||'MAX'} XP`;
       $('xp-card').style.display='flex';
     }
-
   }catch(e){
     $('diary-loader').innerHTML=`<div class="error-msg">Ошибка загрузки данных. Проверьте подключение.</div>`;
   }
 
-  // weekly bars
   try{
-    const act = await api('activity');
-    const wb = $('weekly-bars');
+    const act=await api('activity');
+    const wb=$('weekly-bars');
     const today=new Date();
-    const maxCnt = Math.max(...act.map(a=>a.count),1);
+    const maxCnt=Math.max(...act.map(a=>a.count),1);
     const days7=[];
     for(let i=6;i>=0;i--){const d2=new Date(today);d2.setDate(today.getDate()-i);days7.push(d2);}
     wb.innerHTML=days7.map((d2,i)=>{
@@ -713,50 +608,13 @@ async function loadDiary(){
   }catch(e){}
 }
 
-/* resolve user from Telegram initData */
-let _usersCache=null;
-async function getUsers(){
-  if(_usersCache) return _usersCache;
-  _usersCache = await api('users');
-  return _usersCache;
-}
-let _resolvedUid=null;
-async function resolveUserId(){
-  if(_resolvedUid) return _resolvedUid;
-  const tg = window.Telegram?.WebApp;
-  const tgUser = tg?.initDataUnsafe?.user;
-  if(tgUser?.username){
-    const users = await getUsers();
-    const found = users.find(u=>u.username===tgUser.username||u.username==='@'+tgUser.username);
-    if(found){_resolvedUid=found.id;return found.id;}
-  }
-  // fallback: first user
-  const users=await getUsers();
-  _resolvedUid=users[0]?.id||1;
-  return _resolvedUid;
-}
-async function getUserData(uid){
-  const users=await getUsers();
-  return users.find(u=>u.id===uid)||null;
-}
-async function getCalorieGoal(uid){
-  const u=await getUserData(uid||await resolveUserId());
-  return u?.calorie_goal||2000;
-}
-async function getUserStreak(){
-  try{const uid=await resolveUserId();const u=await getUserData(uid);return u?.streak_days||0;}catch{return 0;}
-}
-
-/* ══════════════ ANALYTICS ══════════════ */
+/* ── ANALYTICS ── */
 async function loadAnalytics(){
   try{
-    const [kbju,an] = await Promise.all([api('kbju-avg'),api('analytics')]);
-
-    // donuts
+    const [kbju,an]=await Promise.all([api('kbju-avg'),api('analytics')]);
     const maxMacro=Math.max(kbju.protein_g,kbju.fat_g,kbju.carbs_g,1);
     function setDonut(id,valId,val,max){
-      const circ=188;
-      const off=circ-Math.min(val/max,1)*circ;
+      const off=188-Math.min(val/max,1)*188;
       document.getElementById(id).style.strokeDashoffset=off;
       document.getElementById(valId).textContent=Math.round(val);
     }
@@ -764,7 +622,6 @@ async function loadAnalytics(){
     setDonut('d-fat','dv-fat',kbju.fat_g,maxMacro);
     setDonut('d-carbs','dv-carbs',kbju.carbs_g,maxMacro);
 
-    // line chart
     const days=an.days;
     if(days.length>1){
       const W=Math.max(document.querySelector('.line-chart-wrap').clientWidth||300,300);
@@ -777,24 +634,19 @@ async function loadAnalytics(){
       const svg=$('line-chart');
       svg.setAttribute('width',W);
       svg.innerHTML=`
-        <defs>
-          <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#29b6f6" stop-opacity=".35"/>
-            <stop offset="100%" stop-color="#29b6f6" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#29b6f6" stop-opacity=".35"/>
+          <stop offset="100%" stop-color="#29b6f6" stop-opacity="0"/>
+        </linearGradient></defs>
         <path d="${area}" fill="url(#lg)"/>
         <polyline points="${pts}" fill="none" stroke="#0288d1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
         ${days.map((d,i)=>`<circle cx="${PAD+i*xStep}" cy="${yOf(d)}" r="4" fill="#0288d1"/>`).join('')}
         ${days.map((d,i)=>{
-          const x=PAD+i*xStep, y=yOf(d)-8;
           if(i%3!==0) return '';
-          return `<text x="${x}" y="${y}" text-anchor="middle" font-size="9" fill="#6b8fa8" font-family="Nunito" font-weight="700">${d.avg_kcal}</text>`;
-        }).join('')}
-      `;
+          return `<text x="${PAD+i*xStep}" y="${yOf(d)-8}" text-anchor="middle" font-size="9" fill="#6b8fa8" font-family="Nunito" font-weight="700">${d.avg_kcal}</text>`;
+        }).join('')}`;
     }
 
-    // top dishes
     const maxCnt=Math.max(...an.top_dishes.map(d=>d.cnt),1);
     const MEDALS=['🥇','🥈','🥉'];
     $('top-dishes').innerHTML=an.top_dishes.map((d,i)=>`
@@ -803,8 +655,7 @@ async function loadAnalytics(){
         <div class="dish-name-txt">${d.dish_name}</div>
         <div class="dish-bar-wrap"><div class="dish-bar-fill" style="width:${d.cnt/maxCnt*100}%"></div></div>
         <div class="dish-cnt">${d.cnt}×</div>
-      </div>
-    `).join('');
+      </div>`).join('');
 
     $('analytics-loader').style.display='none';
     $('analytics-content').style.display='flex';
@@ -813,18 +664,7 @@ async function loadAnalytics(){
   }
 }
 
-/* ── display name helper ── */
-function displayName(username){
-  if(!username) return 'Игрок';
-  const clean = username.replace(/^@/,'');
-  if(clean.length<=2) return clean[0]+'***';
-  const first = clean.slice(0,2);
-  const last  = clean.slice(-1);
-  const stars = '*'.repeat(Math.min(clean.length-3,4));
-  return first+stars+last;
-}
-
-/* ══════════════ LEADERBOARD ══════════════ */
+/* ── LEADERBOARD ── */
 async function loadLeaderboard(){
   try{
     const rows=await api('leaderboard');
@@ -834,7 +674,7 @@ async function loadLeaderboard(){
       return `<div class="lb-card glass-card">
         <div class="lb-rank">${MEDALS[i]||`${i+1}`}</div>
         <div class="lb-info">
-          <div class="lb-username">${displayName(u.username)}</div>
+          <div class="lb-username">${displayName(u)}</div>
           <div class="lb-meta">🔥 ${u.streak_days} дней · 🏅 ${u.ach_count} ачивок</div>
           <span class="lb-level-badge">${lv.emoji} ${lv.name}</span>
         </div>
@@ -851,7 +691,7 @@ async function loadLeaderboard(){
   }
 }
 
-/* ══════════════ PROFILE ══════════════ */
+/* ── PROFILE ── */
 async function loadProfile(){
   try{
     const uid=await resolveUserId();
@@ -862,12 +702,12 @@ async function loadProfile(){
     const pctXP=lv.nextXp?Math.min((u.xp-lv.minXp)/(lv.nextXp-lv.minXp),1)*100:100;
 
     $('p-avatar').textContent=lv.emoji;
-    $('p-name').textContent=`@${u.username}`;  // профиль — себе можно показывать полностью
+    // в профиле — себе показываем полное имя/username
+    $('p-name').textContent=u.first_name||`@${u.username}`;
     $('p-level').textContent=`${lv.emoji} ${lv.name} · Уровень ${u.level||1}`;
     $('p-xp-bar').style.width=pctXP+'%';
     $('p-xp-txt').textContent=`${u.xp} / ${lv.nextXp||'MAX'} XP`;
 
-    // stats grid
     const stats=[
       ['🍽',u.meal_count,'Приёмов пищи'],
       ['🔥',u.streak_days,'Дней стрика'],
@@ -879,18 +719,12 @@ async function loadProfile(){
         <div style="font-size:28px">${ic}</div>
         <div class="stat-val">${val??'—'}</div>
         <div class="stat-label">${lbl}</div>
-      </div>
-    `).join('');
+      </div>`).join('');
 
-    // goals
-    const GOAL_LABELS={
-      lose_weight:'Похудение',gain_weight:'Набор массы',maintain:'Поддержание',
-    };
-    const ACT_LABELS={
-      low:'Низкая',medium:'Средняя',high:'Высокая',
-    };
+    const GOAL_LABELS={lose_weight:'Похудение',gain_weight:'Набор массы',maintain:'Поддержание'};
+    const ACT_LABELS={low:'Низкая',medium:'Средняя',high:'Высокая'};
     const goals=[
-      ['Пол', u.gender==='male'?'Мужской':'Женский'],
+      ['Пол',u.gender==='male'?'Мужской':'Женский'],
       ['Возраст',u.age?`${u.age} лет`:'—'],
       ['Рост',u.height_cm?`${u.height_cm} см`:'—'],
       ['Вес',u.weight_kg?`${u.weight_kg} кг`:'—'],
@@ -902,22 +736,18 @@ async function loadProfile(){
       <div class="goal-row">
         <div class="goal-key">${k}</div>
         <div class="goal-val">${v}</div>
-      </div>
-    `).join('');
+      </div>`).join('');
 
-    // achievements
     const achData=await api('achievements');
     const earned=new Set(achData.map(a=>a.code));
-    $('ach-grid').innerHTML=Object.entries(ACHIEVEMENTS).map(([code,[ico,name,desc]])=>{
-      const has=earned.has(code);
-      return `<div class="ach-item glass-card${has?'':' locked'}">
+    $('ach-grid').innerHTML=Object.entries(ACHIEVEMENTS).map(([code,[ico,name,desc]])=>`
+      <div class="ach-item glass-card${earned.has(code)?'':' locked'}">
         <div class="ach-icon">${ico}</div>
         <div class="ach-info">
           <div class="ach-name">${name}</div>
           <div class="ach-desc">${desc}</div>
         </div>
-      </div>`;
-    }).join('');
+      </div>`).join('');
 
     $('profile-loader').style.display='none';
     $('profile-content').style.display='flex';
@@ -927,10 +757,7 @@ async function loadProfile(){
 }
 
 /* ── INIT ── */
-if(window.Telegram?.WebApp){
-  Telegram.WebApp.ready();
-  Telegram.WebApp.expand();
-}
+if(window.Telegram?.WebApp){Telegram.WebApp.ready();Telegram.WebApp.expand();}
 loadDiary();
 </script>
 </body>
