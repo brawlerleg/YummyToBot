@@ -643,7 +643,7 @@ if (tg) {
   tg.ready(); tg.expand();
   const u = tg.initDataUnsafe?.user;
   if (u) {
-    userId = u.id;
+    userId = String(u.id);
     document.getElementById('profile-name').textContent =
       [u.first_name, u.last_name].filter(Boolean).join(' ');
     document.getElementById('profile-avatar').textContent =
@@ -982,7 +982,24 @@ function switchTab(name, el) {
 }
 
 // ─── INIT ───
-loadProfile().then(() => loadToday());
+// Ждём tg.ready(), потом грузим данные
+async function init() {
+  // Если TG WebApp — userId уже установлен синхронно выше.
+  // Если нет (браузер/тест) — можно задать userId вручную:
+  // userId = '123456789';
+
+  if (!userId) {
+    // Нет userId — просто рендерим пустой стейт
+    renderToday();
+    return;
+  }
+  try {
+    await loadProfile();  // грузим профиль (goalKcal и данные юзера)
+  } catch(e) { console.warn('profile err:', e); }
+  loadToday();            // грузим еду уже с актуальным goalKcal
+}
+
+init();
 </script>
 </body>
 </html>
