@@ -640,7 +640,7 @@ async function loadDiary(){
     const circ=345;
     $('ring-fill').style.strokeDashoffset = circ - circ*pct;
     $('ring-kcal').textContent = Math.round(totalKcal);
-    $('ring-label').textContent = `из ${goal} ккал`;
+    $('ring-label').textContent = `из ${goal}`;
 
     // macros
     $('m-protein').textContent=Math.round(totalP);
