@@ -146,6 +146,28 @@
     .dish-bar-wrap{width:60px;height:6px;background:rgba(2,136,209,.1);border-radius:10px;overflow:hidden;}
     .dish-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-dark),var(--blue));border-radius:10px;}
 
+
+    /* LEADERBOARD SWITCHER */
+    .lb-switcher{
+      display:flex;gap:8px;padding:0 14px 14px;
+    }
+    .lb-switch-btn{
+      flex:1;padding:10px 6px;border:none;border-radius:14px;
+      font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;
+      cursor:pointer;transition:all .2s;
+      background:rgba(255,255,255,0.22);
+      backdrop-filter:blur(10px);
+      color:rgba(255,255,255,0.7);
+      border:1.5px solid rgba(255,255,255,0.3);
+    }
+    .lb-switch-btn.active{
+      background:rgba(255,255,255,0.92);
+      color:var(--blue-dark);
+      border-color:transparent;
+      box-shadow:0 4px 16px rgba(2,136,209,0.25);
+      transform:translateY(-1px);
+    }
+    .lb-switch-btn .lb-btn-icon{font-size:18px;display:block;margin-bottom:2px;}
     /* LEADERBOARD */
     .lb-list{padding:0 14px;display:flex;flex-direction:column;gap:10px;}
     .lb-card{border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;}
@@ -333,6 +355,18 @@
       </div>
       <div class="page-title">🏆 Лидерборд</div>
     </div>
+    <!-- Переключатель -->
+    <div class="lb-switcher">
+      <button class="lb-switch-btn active" id="lb-btn-xp" onclick="switchLb('xp')">
+        <span class="lb-btn-icon">⚡️</span>Топ XP
+      </button>
+      <button class="lb-switch-btn" id="lb-btn-fat" onclick="switchLb('fat')">
+        <span class="lb-btn-icon">🍔</span>Жирдяи
+      </button>
+      <button class="lb-switch-btn" id="lb-btn-thin" onclick="switchLb('thin')">
+        <span class="lb-btn-icon">🥗</span>Анорексички
+      </button>
+    </div>
     <div id="lb-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
     <div class="lb-list" id="lb-list" style="display:none"></div>
   </div>
@@ -453,12 +487,7 @@ function loadPage(pg){
 /* ── DIARY ── */
 let dateOffset=0;
 function formatDate(offset){const d=new Date();d.setDate(d.getDate()+offset);return d;}
-function dateStr(d){
-  const y=d.getFullYear();
-  const m=String(d.getMonth()+1).padStart(2,'0');
-  const day=String(d.getDate()).padStart(2,'0');
-  return y+'-'+m+'-'+day;
-}
+function dateStr(d){return d.toISOString().split('T')[0];}
 function dateLabelStr(d,offset){
   if(offset===0) return `Сегодня, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
   if(offset===-1) return `Вчера, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
@@ -505,32 +534,11 @@ let _resolvedUid=null;
 async function resolveUserId(){
   if(_resolvedUid) return _resolvedUid;
   const tgUser=window.Telegram?.WebApp?.initDataUnsafe?.user;
-  // Способ 1: по числовому id из initDataUnsafe (самый надёжный)
-  if(tgUser?.id){
-    const users=await getUsers();
-    const found=users.find(u=>String(u.id)===String(tgUser.id));
-    if(found){_resolvedUid=found.id;return found.id;}
-  }
-  // Способ 2: парсим initData вручную
-  try{
-    const params=new URLSearchParams(window.Telegram?.WebApp?.initData||'');
-    const userStr=params.get('user');
-    if(userStr){
-      const parsed=JSON.parse(decodeURIComponent(userStr));
-      if(parsed?.id){
-        const users=await getUsers();
-        const found=users.find(u=>String(u.id)===String(parsed.id));
-        if(found){_resolvedUid=found.id;return found.id;}
-      }
-    }
-  }catch(e){}
-  // Способ 3: по username как fallback
   if(tgUser?.username){
     const users=await getUsers();
     const found=users.find(u=>u.username===tgUser.username||u.username==='@'+tgUser.username);
     if(found){_resolvedUid=found.id;return found.id;}
   }
-  // Последний fallback
   const users=await getUsers();
   _resolvedUid=users[0]?.id||1;
   return _resolvedUid;
@@ -691,14 +699,28 @@ async function loadAnalytics(){
 }
 
 /* ── LEADERBOARD ── */
-async function loadLeaderboard(){
-  try{
-    const rows=await api('leaderboard');
-    const MEDALS=['🥇','🥈','🥉'];
-    $('lb-list').innerHTML=rows.map((u,i)=>{
+let _lbMode = 'xp';
+let _lbCache = {};
+
+function switchLb(mode){
+  _lbMode = mode;
+  ['xp','fat','thin'].forEach(m => {
+    $('lb-btn-'+m).classList.toggle('active', m===mode);
+  });
+  renderLb();
+}
+
+function renderLb(){
+  const MEDALS=['🥇','🥈','🥉'];
+  const list = $('lb-list');
+
+  if(_lbMode === 'xp'){
+    const rows = _lbCache.xp || [];
+    if(!rows.length){ list.innerHTML='<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Нет данных 🤷</div>'; return; }
+    list.innerHTML = rows.map((u,i)=>{
       const lv=getLevel(u.xp||0);
       return `<div class="lb-card glass-card">
-        <div class="lb-rank">${MEDALS[i]||`${i+1}`}</div>
+        <div class="lb-rank">${MEDALS[i]||i+1}</div>
         <div class="lb-info">
           <div class="lb-username">${displayName(u)}</div>
           <div class="lb-meta">🔥 ${u.streak_days} дней · 🏅 ${u.ach_count} ачивок</div>
@@ -710,8 +732,56 @@ async function loadLeaderboard(){
         </div>
       </div>`;
     }).join('');
+  }
+
+  if(_lbMode === 'fat'){
+    const rows = _lbCache.kcal || [];
+    if(!rows.length){ list.innerHTML='<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>'; return; }
+    const sorted = [...rows].filter(u=>u.kcal_today>0).sort((a,b)=>b.kcal_today-a.kcal_today).slice(0,10);
+    list.innerHTML = sorted.map((u,i)=>`
+      <div class="lb-card glass-card">
+        <div class="lb-rank">${MEDALS[i]||i+1}</div>
+        <div class="lb-info">
+          <div class="lb-username">${displayName(u)}</div>
+          <div class="lb-meta">🍔 Сожрал сегодня</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-xp" style="color:var(--orange)">${Math.round(u.kcal_today)}</div>
+          <div class="lb-xp-label">ккал</div>
+        </div>
+      </div>`).join('');
+  }
+
+  if(_lbMode === 'thin'){
+    const rows = _lbCache.kcal || [];
+    if(!rows.length){ list.innerHTML='<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>'; return; }
+    const sorted = [...rows].filter(u=>u.kcal_today>0).sort((a,b)=>a.kcal_today-b.kcal_today).slice(0,10);
+    list.innerHTML = sorted.map((u,i)=>`
+      <div class="lb-card glass-card">
+        <div class="lb-rank">${MEDALS[i]||i+1}</div>
+        <div class="lb-info">
+          <div class="lb-username">${displayName(u)}</div>
+          <div class="lb-meta">🥗 Поклевал сегодня</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-xp" style="color:var(--green)">${Math.round(u.kcal_today)}</div>
+          <div class="lb-xp-label">ккал</div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+async function loadLeaderboard(){
+  try{
+    const [xpRows, kcalRows] = await Promise.all([
+      api('leaderboard'),
+      api('users')
+    ]);
+    _lbCache.xp   = xpRows;
+    _lbCache.kcal = kcalRows;
     $('lb-loader').style.display='none';
     $('lb-list').style.display='flex';
+    renderLb();
   }catch(e){
     $('lb-loader').innerHTML=`<div class="error-msg">Ошибка загрузки рейтинга.</div>`;
   }
