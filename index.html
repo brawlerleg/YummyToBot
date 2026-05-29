@@ -757,7 +757,7 @@ async function loadLeaderboard(){
       return `<div class="lb-card glass-card${me?' lb-me':''}">
         <div class="lb-rank">${MEDALS[i]||i+1}</div>
         <div class="lb-info">
-          <div class="lb-username">${displayName(u)}</div>
+          <div class="lb-username">${displayName(u)}${me?'<span class="lb-you-badge">ты</span>':''}</div>
           <div class="lb-meta">🍔 Сегодня</div>
         </div>
         <div class="lb-right">
@@ -774,7 +774,7 @@ async function loadLeaderboard(){
       return `<div class="lb-card glass-card${me?' lb-me':''}">
         <div class="lb-rank">${MEDALS[i]||i+1}</div>
         <div class="lb-info">
-          <div class="lb-username">${displayName(u)}</div>
+          <div class="lb-username">${displayName(u)}${me?'<span class="lb-you-badge">ты</span>':''}</div>
           <div class="lb-meta">🥗 Сегодня</div>
         </div>
         <div class="lb-right">
