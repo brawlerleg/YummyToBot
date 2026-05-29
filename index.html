@@ -453,7 +453,12 @@ function loadPage(pg){
 /* ── DIARY ── */
 let dateOffset=0;
 function formatDate(offset){const d=new Date();d.setDate(d.getDate()+offset);return d;}
-function dateStr(d){return d.toISOString().split('T')[0];}
+function dateStr(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
+}
 function dateLabelStr(d,offset){
   if(offset===0) return `Сегодня, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
   if(offset===-1) return `Вчера, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
@@ -500,11 +505,32 @@ let _resolvedUid=null;
 async function resolveUserId(){
   if(_resolvedUid) return _resolvedUid;
   const tgUser=window.Telegram?.WebApp?.initDataUnsafe?.user;
+  // Способ 1: по числовому id из initDataUnsafe (самый надёжный)
+  if(tgUser?.id){
+    const users=await getUsers();
+    const found=users.find(u=>String(u.id)===String(tgUser.id));
+    if(found){_resolvedUid=found.id;return found.id;}
+  }
+  // Способ 2: парсим initData вручную
+  try{
+    const params=new URLSearchParams(window.Telegram?.WebApp?.initData||'');
+    const userStr=params.get('user');
+    if(userStr){
+      const parsed=JSON.parse(decodeURIComponent(userStr));
+      if(parsed?.id){
+        const users=await getUsers();
+        const found=users.find(u=>String(u.id)===String(parsed.id));
+        if(found){_resolvedUid=found.id;return found.id;}
+      }
+    }
+  }catch(e){}
+  // Способ 3: по username как fallback
   if(tgUser?.username){
     const users=await getUsers();
     const found=users.find(u=>u.username===tgUser.username||u.username==='@'+tgUser.username);
     if(found){_resolvedUid=found.id;return found.id;}
   }
+  // Последний fallback
   const users=await getUsers();
   _resolvedUid=users[0]?.id||1;
   return _resolvedUid;
