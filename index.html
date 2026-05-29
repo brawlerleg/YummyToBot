@@ -41,35 +41,24 @@
       position:fixed;bottom:0;left:0;right:0;
       display:flex;justify-content:center;
       padding:12px 20px env(safe-area-inset-bottom,16px);
-      z-index:100;
-      pointer-events:none;
+      z-index:100;pointer-events:none;
     }
     .bottom-nav{
       display:flex;align-items:center;
       background:rgba(44,44,46,0.92);
       backdrop-filter:blur(28px) saturate(180%);
       -webkit-backdrop-filter:blur(28px) saturate(180%);
-      border-radius:999px;
-      padding:6px;
-      gap:0;
-      position:relative;
-      pointer-events:all;
+      border-radius:999px;padding:6px;gap:0;
+      position:relative;pointer-events:all;
       box-shadow:0 8px 32px rgba(0,0,0,0.28);
     }
     .nav-indicator{
-      position:absolute;
-      top:6px;bottom:6px;
-      background:#3a3a3c;
-      border-radius:999px;
-      transition:
-        transform .28s cubic-bezier(.4,0,.2,1),
-        width .28s cubic-bezier(.4,0,.2,1),
-        top .22s cubic-bezier(.34,1.3,.64,1),
-        bottom .22s cubic-bezier(.34,1.3,.64,1),
-        background .2s ease,
-        box-shadow .2s ease;
-      pointer-events:none;
-      z-index:0;
+      position:absolute;top:6px;bottom:6px;
+      background:#3a3a3c;border-radius:999px;
+      transition:transform .28s cubic-bezier(.4,0,.2,1),width .28s cubic-bezier(.4,0,.2,1),
+        top .22s cubic-bezier(.34,1.3,.64,1),bottom .22s cubic-bezier(.34,1.3,.64,1),
+        background .2s ease,box-shadow .2s ease;
+      pointer-events:none;z-index:0;
     }
     .nav-indicator.lit{
       top:2px;bottom:2px;
@@ -77,18 +66,15 @@
       backdrop-filter:blur(20px) saturate(200%);
       -webkit-backdrop-filter:blur(20px) saturate(200%);
       border:1px solid rgba(0,140,255,0.5);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.35),
-        0 2px 18px rgba(0,100,255,0.25);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.35),0 2px 18px rgba(0,100,255,0.25);
     }
     .nav-item{
       display:flex;flex-direction:column;align-items:center;gap:4px;
       cursor:pointer;padding:8px 22px;border-radius:999px;
       position:relative;z-index:1;
-      -webkit-tap-highlight-color:transparent;
-      min-width:72px;
+      -webkit-tap-highlight-color:transparent;min-width:72px;
     }
-    .nav-icon{font-size:22px;line-height:1;transition:filter .2s,transform .2s;filter:grayscale(1) brightness(.6);}
+    .nav-icon{font-size:22px;line-height:1;transition:filter .2s;filter:grayscale(1) brightness(.6);}
     .nav-label{font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:.01em;transition:color .2s;}
     .nav-item.active .nav-icon{filter:grayscale(0) brightness(1) drop-shadow(0 2px 6px rgba(41,182,246,.5));}
     .nav-item.active .nav-label{color:#29b6f6;}
@@ -181,6 +167,24 @@
     .dish-cnt{font-size:13px;font-weight:800;color:var(--blue-dark);}
     .dish-bar-wrap{width:60px;height:6px;background:rgba(2,136,209,.1);border-radius:10px;overflow:hidden;}
     .dish-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-dark),var(--blue));border-radius:10px;}
+
+
+    /* SWITCHER */
+    .sw{position:relative;background:rgba(0,0,0,.12);border-radius:99px;padding:4px;display:inline-flex;box-shadow:inset 0 1px 4px rgba(0,0,0,.15),inset 0 -1px 0 rgba(255,255,255,.08);}
+    .sw-thumb{position:absolute;top:4px;left:4px;bottom:4px;border-radius:99px;transition:transform .32s cubic-bezier(.34,1.25,.64,1);background:rgba(255,255,255,.28);backdrop-filter:blur(18px) saturate(200%);-webkit-backdrop-filter:blur(18px) saturate(200%);border:1px solid rgba(255,255,255,.55);box-shadow:0 2px 12px rgba(2,136,209,.22),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(2,136,209,.1);}
+    .sw-thumb::before{content:'';position:absolute;top:0;left:10%;right:10%;height:40%;background:linear-gradient(180deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 100%);border-radius:99px 99px 60% 60%;pointer-events:none;}
+    .sw-item{width:48px;height:44px;border:none;background:transparent;font-size:24px;cursor:pointer;border-radius:99px;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;transition:transform .15s,filter .25s,opacity .25s;filter:brightness(.6) saturate(.5);opacity:.75;outline:none;-webkit-tap-highlight-color:transparent;}
+    .sw-item.active{filter:brightness(1) saturate(1);opacity:1;}
+    .sw-item:active{transform:scale(.82);}
+    .lb-wrap{padding:0 14px;}
+    .lb-section-title{font-size:13px;font-weight:800;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;margin-top:2px;}
+    .lb-slides-outer{overflow:hidden;}
+    .lb-slides{display:flex;transition:transform .38s cubic-bezier(.4,0,.2,1);}
+    .lb-slide{min-width:100%;display:flex;flex-direction:column;gap:10px;}
+    .lb-card.lb-me{background:#fff;border:2px solid #29b6f6;box-shadow:0 0 0 4px rgba(41,182,246,.18),0 6px 20px rgba(2,136,209,.2);}
+    .lb-card.lb-me .lb-username{color:#0277bd;}
+    .lb-card.lb-me .lb-xp{color:#0277bd !important;}
+    .lb-you-badge{font-size:10px;font-weight:900;background:linear-gradient(135deg,#0288d1,#29b6f6);color:#fff;padding:2px 9px;border-radius:99px;box-shadow:0 2px 6px rgba(2,136,209,.35);margin-left:6px;vertical-align:middle;display:inline-block;flex-shrink:0;}
 
     /* LEADERBOARD */
     .lb-list{padding:0 14px;display:flex;flex-direction:column;gap:10px;}
@@ -366,11 +370,25 @@
           <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
           <div class="logo-text">YummyTo<span>Рейтинг</span></div>
         </div>
+        <div class="sw" id="lb-sw">
+          <div class="sw-thumb" id="lb-thumb"></div>
+          <button class="sw-item active" onclick="lbSel(0)">⚡️</button>
+          <button class="sw-item" onclick="lbSel(1)">🍔</button>
+          <button class="sw-item" onclick="lbSel(2)">🥗</button>
+        </div>
       </div>
-      <div class="page-title">🏆 Лидерборд</div>
     </div>
     <div id="lb-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
-    <div class="lb-list" id="lb-list" style="display:none"></div>
+    <div class="lb-wrap" id="lb-wrap" style="display:none">
+      <div class="lb-section-title" id="lb-title">⚡️ Топ XP</div>
+      <div class="lb-slides-outer">
+        <div class="lb-slides" id="lb-slides">
+          <div class="lb-slide lb-list" id="lb-list-xp"></div>
+          <div class="lb-slide lb-list" id="lb-list-fat"></div>
+          <div class="lb-slide lb-list" id="lb-list-thin"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- PROFILE -->
@@ -411,20 +429,16 @@
   <div class="bottom-nav" id="bottom-nav">
     <div class="nav-indicator" id="nav-ind"></div>
     <div class="nav-item active" data-page="diary">
-      <div class="nav-icon">📋</div>
-      <div class="nav-label">Дневник</div>
+      <div class="nav-icon">📋</div><div class="nav-label">Дневник</div>
     </div>
     <div class="nav-item" data-page="analytics">
-      <div class="nav-icon">📊</div>
-      <div class="nav-label">Анализ</div>
+      <div class="nav-icon">📊</div><div class="nav-label">Анализ</div>
     </div>
     <div class="nav-item" data-page="leaderboard">
-      <div class="nav-icon">🏆</div>
-      <div class="nav-label">Рейтинг</div>
+      <div class="nav-icon">🏆</div><div class="nav-label">Рейтинг</div>
     </div>
     <div class="nav-item" data-page="profile">
-      <div class="nav-icon">👤</div>
-      <div class="nav-label">Профиль</div>
+      <div class="nav-icon">👤</div><div class="nav-label">Профиль</div>
     </div>
   </div>
 </div>
@@ -485,17 +499,16 @@ function displayName(u){
 
 /* ── NAV ── */
 const pageLoaded={};
-const navEl  = document.getElementById('bottom-nav');
-const indEl  = document.getElementById('nav-ind');
-const navItems = ()=>[...navEl.querySelectorAll('.nav-item')];
-let navCurIdx=0, navTabX=[], navTabW=[];
+const navEl=document.getElementById('bottom-nav');
+const indEl=document.getElementById('nav-ind');
+const navItems=()=>[...navEl.querySelectorAll('.nav-item')];
+let navCurIdx=0,navTabX=[],navTabW=[];
 
 function navMeasure(){
   const navLeft=navEl.getBoundingClientRect().left+6;
   navItems().forEach((el,i)=>{
     const r=el.getBoundingClientRect();
-    navTabX[i]=r.left-navLeft;
-    navTabW[i]=r.width;
+    navTabX[i]=r.left-navLeft; navTabW[i]=r.width;
   });
 }
 function navMoveTo(idx,animated){
@@ -511,13 +524,11 @@ function navActivate(idx){
   items.forEach((el,i)=>el.classList.toggle('active',i===idx));
   navMoveTo(idx,true);
   indEl.classList.add('lit');
-  // переключаем страницу
   const pg=items[idx].dataset.page;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+pg).classList.add('active');
   if(!pageLoaded[pg]){pageLoaded[pg]=true;loadPage(pg);}
 }
-
 // drag
 let navDragMoved=false,navDragStartX=0,navDragStartOff=0,navDragging=false;
 navEl.addEventListener('pointerdown',e=>{
@@ -530,8 +541,7 @@ window.addEventListener('pointermove',e=>{
   if(Math.abs(dx)<6)return;
   if(!navDragMoved)indEl.classList.remove('lit');
   navDragMoved=true;
-  const minX=navTabX[0],maxX=navTabX[navTabX.length-1];
-  const newX=Math.max(minX,Math.min(maxX,navDragStartOff+dx));
+  const newX=Math.max(navTabX[0],Math.min(navTabX[navTabX.length-1],navDragStartOff+dx));
   indEl.style.transition='none';
   indEl.style.transform=`translateX(${newX}px)`;
 });
@@ -544,11 +554,8 @@ window.addEventListener('pointerup',e=>{
   navTabX.forEach((x,i)=>{const d=Math.abs(x-curX);if(d<minDist){minDist=d;closest=i;}});
   navActivate(closest);
 });
-
 window.addEventListener('load',()=>{
-  navMeasure();
-  navMoveTo(0,false);
-  indEl.classList.add('lit');
+  navMeasure();navMoveTo(0,false);indEl.classList.add('lit');
   navItems().forEach((el,i)=>el.addEventListener('click',()=>navActivate(i)));
 });
 window.addEventListener('resize',()=>{navMeasure();navMoveTo(navCurIdx,false);});
@@ -562,7 +569,12 @@ function loadPage(pg){
 /* ── DIARY ── */
 let dateOffset=0;
 function formatDate(offset){const d=new Date();d.setDate(d.getDate()+offset);return d;}
-function dateStr(d){return d.toISOString().split('T')[0];}
+function dateStr(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
+}
 function dateLabelStr(d,offset){
   if(offset===0) return `Сегодня, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
   if(offset===-1) return `Вчера, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
@@ -609,6 +621,26 @@ let _resolvedUid=null;
 async function resolveUserId(){
   if(_resolvedUid) return _resolvedUid;
   const tgUser=window.Telegram?.WebApp?.initDataUnsafe?.user;
+  // Способ 1: по числовому id (самый надёжный)
+  if(tgUser?.id){
+    const users=await getUsers();
+    const found=users.find(u=>String(u.id)===String(tgUser.id));
+    if(found){_resolvedUid=found.id;return found.id;}
+  }
+  // Способ 2: парсим initData вручную
+  try{
+    const params=new URLSearchParams(window.Telegram?.WebApp?.initData||'');
+    const userStr=params.get('user');
+    if(userStr){
+      const parsed=JSON.parse(decodeURIComponent(userStr));
+      if(parsed?.id){
+        const users=await getUsers();
+        const found=users.find(u=>String(u.id)===String(parsed.id));
+        if(found){_resolvedUid=found.id;return found.id;}
+      }
+    }
+  }catch(e){}
+  // Способ 3: по username
   if(tgUser?.username){
     const users=await getUsers();
     const found=users.find(u=>u.username===tgUser.username||u.username==='@'+tgUser.username);
@@ -774,16 +806,37 @@ async function loadAnalytics(){
 }
 
 /* ── LEADERBOARD ── */
+let _lbIdx=0;
+const LB_TITLES=['⚡️ Топ XP','🍔 Топ жирдяев за сегодня','🥗 Топ анорексичек за сегодня'];
+
+function lbSel(idx){
+  _lbIdx=idx;
+  const items=document.querySelectorAll('#lb-sw .sw-item');
+  const thumb=$('lb-thumb');
+  const w=items[0].offsetWidth;
+  items.forEach((b,i)=>b.classList.toggle('active',i===idx));
+  thumb.style.transform=`translateX(${idx*w}px)`;
+  $('lb-slides').style.transform=`translateX(${-idx*100}%)`;
+  $('lb-title').textContent=LB_TITLES[idx];
+}
+
 async function loadLeaderboard(){
   try{
-    const rows=await api('leaderboard');
+    const myUid=await resolveUserId();
+    const tgU=window.Telegram?.WebApp?.initDataUnsafe?.user;
+    const myUsername=tgU?.username||'';
+    const [xpRows,allUsers]=await Promise.all([api('leaderboard'),api('users')]);
     const MEDALS=['🥇','🥈','🥉'];
-    $('lb-list').innerHTML=rows.map((u,i)=>{
+    const badge=(me)=>me?'<span class="lb-you-badge">ты</span>':'';
+
+    // XP топ
+    $('lb-list-xp').innerHTML=xpRows.map((u,i)=>{
       const lv=getLevel(u.xp||0);
-      return `<div class="lb-card glass-card">
-        <div class="lb-rank">${MEDALS[i]||`${i+1}`}</div>
+      const me=String(u.id)===String(myUid)||String(u.username)===String(myUsername);
+      return `<div class="lb-card glass-card${me?' lb-me':''}">
+        <div class="lb-rank">${MEDALS[i]||i+1}</div>
         <div class="lb-info">
-          <div class="lb-username">${displayName(u)}</div>
+          <div class="lb-username">${displayName(u)}${badge(me)}</div>
           <div class="lb-meta">🔥 ${u.streak_days} дней · 🏅 ${u.ach_count} ачивок</div>
           <span class="lb-level-badge">${lv.emoji} ${lv.name}</span>
         </div>
@@ -793,8 +846,47 @@ async function loadLeaderboard(){
         </div>
       </div>`;
     }).join('');
+
+    // Жирдяи
+    const fat=[...allUsers].filter(u=>u.kcal_today>0).sort((a,b)=>b.kcal_today-a.kcal_today).slice(0,10);
+    $('lb-list-fat').innerHTML=fat.length?fat.map((u,i)=>{
+      const me=String(u.id)===String(myUid)||String(u.username)===String(myUsername);
+      return `<div class="lb-card glass-card${me?' lb-me':''}">
+        <div class="lb-rank">${MEDALS[i]||i+1}</div>
+        <div class="lb-info">
+          <div class="lb-username">${displayName(u)}${badge(me)}</div>
+          <div class="lb-meta">🍔 Сегодня</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-xp" style="color:var(--orange)">${Math.round(u.kcal_today)}</div>
+          <div class="lb-xp-label">ккал</div>
+        </div>
+      </div>`;}).join('')
+    :'<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
+
+    // Анорексички
+    const thin=[...allUsers].filter(u=>u.kcal_today>0).sort((a,b)=>a.kcal_today-b.kcal_today).slice(0,10);
+    $('lb-list-thin').innerHTML=thin.length?thin.map((u,i)=>{
+      const me=String(u.id)===String(myUid)||String(u.username)===String(myUsername);
+      return `<div class="lb-card glass-card${me?' lb-me':''}">
+        <div class="lb-rank">${MEDALS[i]||i+1}</div>
+        <div class="lb-info">
+          <div class="lb-username">${displayName(u)}${badge(me)}</div>
+          <div class="lb-meta">🥗 Сегодня</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-xp" style="color:var(--green)">${Math.round(u.kcal_today)}</div>
+          <div class="lb-xp-label">ккал</div>
+        </div>
+      </div>`;}).join('')
+    :'<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
+
     $('lb-loader').style.display='none';
-    $('lb-list').style.display='flex';
+    $('lb-wrap').style.display='block';
+    requestAnimationFrame(()=>{
+      const items=document.querySelectorAll('#lb-sw .sw-item');
+      if(items[0]) $('lb-thumb').style.width=items[0].offsetWidth+'px';
+    });
   }catch(e){
     $('lb-loader').innerHTML=`<div class="error-msg">Ошибка загрузки рейтинга.</div>`;
   }
