@@ -1,1035 +1,790 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>YummyToBot</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+  <title>YummyTo</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --blue:#29b6f6;--blue-dark:#0288d1;--green:#66bb6a;
+      --orange:#ffa726;--yellow:#ffee58;--red:#ef5350;
+      --text:#1a2d3d;--muted:#6b8fa8;--radius:20px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;overflow:hidden;}
+    body{
+      font-family:'Nunito',sans-serif;
+      background:linear-gradient(160deg,#0288d1 0%,#29b6f6 40%,#81d4fa 70%,#b3e5fc 100%);
+      background-attachment:fixed;
+      color:var(--text);display:flex;flex-direction:column;
+    }
+    .glass{
+      background:rgba(255,255,255,0.22);
+      backdrop-filter:blur(18px) saturate(160%);
+      -webkit-backdrop-filter:blur(18px) saturate(160%);
+      border:1px solid rgba(255,255,255,0.45);
+      box-shadow:0 8px 32px rgba(2,136,209,0.18),inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .glass-card{
+      background:rgba(255,255,255,0.82);
+      backdrop-filter:blur(20px) saturate(180%);
+      -webkit-backdrop-filter:blur(20px) saturate(180%);
+      border:1px solid rgba(255,255,255,0.9);
+      box-shadow:0 4px 24px rgba(2,136,209,0.13),inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+    #app{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+    .page{display:none;flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:90px;}
+    .page.active{display:block;}
+    .bottom-nav{
+      position:fixed;bottom:0;left:0;right:0;
+      background:rgba(255,255,255,0.88);
+      backdrop-filter:blur(24px) saturate(200%);
+      -webkit-backdrop-filter:blur(24px) saturate(200%);
+      border-top:1px solid rgba(255,255,255,0.9);
+      box-shadow:0 -4px 30px rgba(2,136,209,0.15);
+      border-radius:24px 24px 0 0;
+      padding:10px 0 env(safe-area-inset-bottom,10px);
+      display:flex;justify-content:space-around;z-index:100;
+    }
+    .nav-item{
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+      font-size:11px;font-weight:700;color:var(--muted);
+      cursor:pointer;padding:4px 14px;border-radius:14px;transition:color .15s;
+    }
+    .nav-item.active{color:var(--blue-dark);}
+    .nav-icon{font-size:24px;}
+    .nav-item.active .nav-icon{filter:drop-shadow(0 2px 6px rgba(2,136,209,.4));}
+    .page-header{padding:20px 20px 28px;position:relative;overflow:hidden;}
+    .page-header::before{content:'';position:absolute;top:-40px;right:-30px;width:180px;height:180px;background:rgba(255,255,255,.1);border-radius:50%;pointer-events:none;}
+    .page-header::after{content:'';position:absolute;bottom:10px;left:-50px;width:140px;height:140px;background:rgba(255,255,255,.07);border-radius:50%;pointer-events:none;}
+    .header-top{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;}
+    .logo-wrap{display:flex;align-items:center;gap:10px;}
+    .logo-text{color:#fff;font-weight:900;font-size:20px;line-height:1;letter-spacing:-.3px;text-shadow:0 2px 8px rgba(0,0,0,.15);}
+    .logo-text span{font-weight:600;opacity:.85;font-size:13px;display:block;}
+    .header-badge{border-radius:30px;padding:7px 15px;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;gap:5px;text-shadow:0 1px 4px rgba(0,0,0,.1);}
+    .page-title{color:#fff;font-weight:900;font-size:22px;margin-top:16px;position:relative;z-index:1;text-shadow:0 2px 8px rgba(0,0,0,.15);}
+    .loader{display:flex;align-items:center;justify-content:center;padding:40px 20px;color:rgba(255,255,255,.7);font-weight:700;font-size:15px;gap:10px;}
+    .spinner{width:22px;height:22px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .error-msg{margin:12px 14px;padding:14px 16px;border-radius:var(--radius);background:rgba(239,83,80,.15);border:1px solid rgba(239,83,80,.3);color:#b71c1c;font-weight:700;font-size:13px;}
 
-:root {
-  --bg:      #059dfa;
-  --bg2:     #0488d8;
-  --card:    #ffffff;
-  --text:    #1a3a5c;
-  --text2:   #5a8aaa;
-  --text3:   #9ec4da;
-  --green:   #4bbf73;
-  --orange:  #f5a623;
-  --red:     #e85d5d;
-  --yellow:  #ffe44d;
-  --shadow:  0 4px 24px rgba(3,60,110,0.13);
-  --shadow2: 0 2px 10px rgba(3,60,110,0.09);
-}
+    /* DIARY */
+    .diary-header-inner{margin-top:18px;position:relative;z-index:1;}
+    .calorie-block{display:flex;align-items:center;justify-content:center;gap:24px;}
+    .ring-wrap{position:relative;width:130px;height:130px;flex-shrink:0;}
+    .ring-wrap svg{transform:rotate(-90deg);}
+    .ring-bg{fill:none;stroke:rgba(255,255,255,.25);stroke-width:10;}
+    .ring-fill{fill:none;stroke:#fff;stroke-width:10;stroke-linecap:round;stroke-dasharray:345;stroke-dashoffset:345;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 0 8px rgba(255,255,255,.7));}
+    .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;}
+    .ring-kcal{font-size:26px;font-weight:900;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.15);}
+    .ring-label{font-size:14px;font-weight:700;opacity:.85;}
+    .macro-mini{display:flex;flex-direction:column;gap:10px;}
+    .macro-mini-item{display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.12);}
+    .macro-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+    .macro-mini-bar{width:76px;height:5px;background:rgba(255,255,255,.25);border-radius:10px;overflow:hidden;}
+    .macro-mini-bar-fill{height:100%;border-radius:10px;}
+    .date-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 10px;}
+    .date-nav button{border:none;border-radius:13px;width:38px;height:38px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue-dark);font-weight:900;transition:transform .1s;}
+    .date-nav button:active{transform:scale(.92);}
+    .date-today{font-weight:800;font-size:16px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.2);}
+    .xp-card{margin:0 14px 10px;border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:14px;}
+    .xp-emoji{font-size:32px;}
+    .xp-info{flex:1;}
+    .xp-level-name{font-weight:900;font-size:15px;color:var(--blue-dark);}
+    .xp-bar-wrap{background:rgba(2,136,209,.12);border-radius:8px;height:7px;margin-top:6px;overflow:hidden;}
+    .xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-dark),var(--blue));border-radius:8px;transition:width .8s ease;}
+    .xp-pts{font-size:12px;color:var(--muted);font-weight:700;margin-top:3px;}
+    .section-title{padding:6px 20px 10px;font-size:13px;font-weight:800;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.8px;}
+    .meal-list{padding:0 14px;display:flex;flex-direction:column;gap:10px;}
+    .meal-card{border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .12s;}
+    .meal-card:active{transform:scale(.97);}
+    .meal-icon{font-size:34px;line-height:1;flex-shrink:0;}
+    .meal-info{flex:1;min-width:0;}
+    .meal-name{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
+    .meal-time{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px;}
+    .meal-macros{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+    .macro-tag{font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px;}
+    .tag-p{background:rgba(102,187,106,.15);color:#2e7d32;}
+    .tag-f{background:rgba(255,167,38,.15);color:#e65100;}
+    .tag-c{background:rgba(41,182,246,.15);color:#0277bd;}
+    .meal-kcal{font-size:16px;font-weight:900;color:var(--blue-dark);flex-shrink:0;text-align:right;}
+    .add-btn{margin:16px 14px 0;background:linear-gradient(135deg,#0277bd,#29b6f6);color:#fff;border:none;border-radius:var(--radius);width:calc(100% - 28px);padding:16px;font-size:16px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;box-shadow:0 6px 24px rgba(2,136,209,.45),inset 0 1px 0 rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s;}
+    .add-btn:active{transform:scale(.97);}
+    .weekly-card{margin:14px 14px 0;border-radius:var(--radius);padding:16px 18px;}
+    .weekly-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;}
+    .weekly-bars{display:flex;align-items:flex-end;gap:6px;height:50px;}
+    .day-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+    .day-bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end;height:40px;}
+    .day-bar{width:100%;border-radius:6px 6px 0 0;background:var(--blue);opacity:.4;transition:opacity .2s;}
+    .day-bar.today{opacity:1;box-shadow:0 0 10px rgba(41,182,246,.5);}
+    .day-label{font-size:10px;font-weight:700;color:var(--muted);}
+    .day-label.today{color:var(--blue-dark);}
 
-html, body {
-  font-family: 'Nunito', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  max-width: 480px;
-  margin: 0 auto;
-  overflow-x: hidden;
-}
+    /* ANALYTICS */
+    .analytics-grid{padding:0 14px;display:flex;flex-direction:column;gap:12px;}
+    .an-card{border-radius:var(--radius);padding:16px 18px;}
+    .an-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px;}
+    .kbju-row{display:flex;justify-content:space-around;align-items:center;}
+    .kbju-item{display:flex;flex-direction:column;align-items:center;gap:6px;}
+    .donut-wrap{position:relative;width:72px;height:72px;}
+    .donut-wrap svg{transform:rotate(-90deg);}
+    .donut-bg{fill:none;stroke-width:8;}
+    .donut-fill{fill:none;stroke-width:8;stroke-linecap:round;stroke-dasharray:188;stroke-dashoffset:188;transition:stroke-dashoffset 1s ease;}
+    .donut-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .donut-val{font-size:15px;font-weight:900;line-height:1;}
+    .donut-unit{font-size:9px;font-weight:700;color:var(--muted);}
+    .kbju-name{font-size:12px;font-weight:800;}
+    .line-chart-wrap{width:100%;overflow-x:auto;}
+    .line-chart-svg{display:block;}
+    .dish-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(2,136,209,.07);}
+    .dish-row:last-child{border-bottom:none;}
+    .dish-rank{font-size:18px;width:28px;text-align:center;flex-shrink:0;}
+    .dish-name-txt{flex:1;font-weight:700;font-size:14px;color:var(--text);}
+    .dish-cnt{font-size:13px;font-weight:800;color:var(--blue-dark);}
+    .dish-bar-wrap{width:60px;height:6px;background:rgba(2,136,209,.1);border-radius:10px;overflow:hidden;}
+    .dish-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-dark),var(--blue));border-radius:10px;}
 
-/* ════ TOPBAR ════ */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px 10px;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: var(--bg);
-}
-.topbar-logo {
-  font-size: 21px;
-  font-weight: 900;
-  letter-spacing: -0.5px;
-  color: #fff;
-}
-.topbar-logo em { font-style: normal; color: var(--yellow); }
-.topbar-date {
-  font-size: 13px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.7);
-  background: rgba(255,255,255,0.15);
-  padding: 4px 10px;
-  border-radius: 99px;
-}
-.topbar-nav {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; color: #fff; cursor: pointer;
-  font-weight: 700;
-  transition: background 0.15s;
-}
-.topbar-nav:active { background: rgba(255,255,255,0.35); }
+    /* LEADERBOARD */
+    .lb-list{padding:0 14px;display:flex;flex-direction:column;gap:10px;}
+    .lb-card{border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;}
+    .lb-rank{font-size:22px;width:36px;text-align:center;flex-shrink:0;}
+    .lb-info{flex:1;min-width:0;}
+    .lb-username{font-weight:800;font-size:15px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .lb-meta{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px;}
+    .lb-right{text-align:right;flex-shrink:0;}
+    .lb-xp{font-size:17px;font-weight:900;color:var(--blue-dark);}
+    .lb-xp-label{font-size:10px;font-weight:700;color:var(--muted);}
+    .lb-level-badge{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:800;background:rgba(2,136,209,.12);color:var(--blue-dark);}
 
-/* ════ CONTENT ════ */
-.content { padding: 8px 12px 100px; display: none; }
-.content.active { display: block; }
-
-/* ════ CARD ════ */
-.card {
-  background: var(--card);
-  border-radius: 20px;
-  padding: 18px;
-  margin-bottom: 10px;
-  box-shadow: var(--shadow);
-}
-
-/* ════ RING + КБЖУ ════ */
-.ring-card {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-.ring-wrap {
-  position: relative;
-  width: 114px; height: 114px;
-  flex-shrink: 0;
-}
-.ring-center {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-}
-.ring-kcal {
-  font-size: 26px; font-weight: 900;
-  color: var(--text); line-height: 1;
-}
-.ring-goal {
-  font-size: 11px; font-weight: 700;
-  color: var(--text2); margin-top: 1px;
-}
-.kbju-list { flex: 1; display: flex; flex-direction: column; gap: 7px; }
-.kbju-row { display: flex; align-items: center; gap: 7px; }
-.kbju-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-.kbju-name { font-size: 12px; font-weight: 700; color: var(--text2); width: 60px; }
-.kbju-bar-wrap {
-  flex: 1; height: 6px; background: #e8f4ff;
-  border-radius: 99px; overflow: hidden;
-}
-.kbju-bar { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
-.kbju-val { font-size: 12px; font-weight: 800; color: var(--text); width: 36px; text-align: right; }
-
-/* Прогресс до нормы */
-.goal-progress { margin-top: 12px; }
-.goal-progress-top {
-  display: flex; justify-content: space-between;
-  font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 4px;
-}
-.goal-track { height: 7px; background: #e8f4ff; border-radius: 99px; overflow: hidden; }
-.goal-fill {
-  height: 100%; border-radius: 99px;
-  background: linear-gradient(90deg, var(--bg) 0%, var(--green) 100%);
-  transition: width 0.7s ease;
-}
-
-/* ════ SECTION LABEL ════ */
-.section-label {
-  font-size: 11px; font-weight: 800;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: rgba(255,255,255,0.6);
-  padding: 10px 4px 6px;
-}
-
-/* ════ MEAL ITEM ════ */
-.meal-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #edf5ff;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-.meal-item:last-child { border-bottom: none; }
-.meal-item:active { background: #f5faff; border-radius: 14px; }
-.meal-emoji {
-  font-size: 26px; width: 44px; height: 44px;
-  background: #edf5ff; border-radius: 13px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.meal-info { flex: 1; min-width: 0; }
-.meal-name {
-  font-size: 14px; font-weight: 700; color: var(--text);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.meal-meta { font-size: 11px; font-weight: 600; color: var(--text2); margin-top: 2px; }
-.meal-kcal-wrap { text-align: right; }
-.meal-kcal { font-size: 16px; font-weight: 800; color: var(--bg); }
-.meal-kcal-sub { font-size: 10px; font-weight: 600; color: var(--text3); }
-
-/* пустой стейт */
-.empty-state {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 28px 16px; gap: 8px;
-}
-.empty-state-icon { font-size: 40px; }
-.empty-state-text { font-size: 13px; font-weight: 600; color: var(--text2); text-align: center; }
-
-/* ════ ADD BUTTON ════ */
-.add-btn {
-  width: 100%;
-  background: rgba(255,255,255,0.18);
-  border: 2px dashed rgba(255,255,255,0.5);
-  border-radius: 16px;
-  padding: 15px;
-  font-family: 'Nunito', sans-serif;
-  font-size: 15px; font-weight: 800;
-  color: #fff;
-  cursor: pointer;
-  margin-bottom: 10px;
-  transition: background 0.15s;
-}
-.add-btn:active { background: rgba(255,255,255,0.28); }
-
-/* ════ DAY PILLS ════ */
-.day-scroll {
-  display: flex; gap: 7px; overflow-x: auto;
-  padding: 0 2px 10px; scrollbar-width: none;
-}
-.day-scroll::-webkit-scrollbar { display: none; }
-.day-pill {
-  flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
-  padding: 8px 11px; border-radius: 14px;
-  background: rgba(255,255,255,0.18);
-  cursor: pointer; min-width: 50px;
-  transition: all 0.15s;
-}
-.day-pill.active { background: var(--card); box-shadow: var(--shadow2); }
-.day-pill-name { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); }
-.day-pill.active .day-pill-name { color: var(--text2); }
-.day-pill-num { font-size: 18px; font-weight: 900; color: #fff; margin-top: 1px; }
-.day-pill.active .day-pill-num { color: var(--text); }
-
-/* ════ WEEK BAR CHART ════ */
-.bars { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
-.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
-.bar-fill { width: 100%; border-radius: 6px 6px 0 0; background: #ddeeff; min-height: 4px; transition: height 0.4s; }
-.bar-fill.today { background: var(--bg); }
-.bar-day { font-size: 11px; font-weight: 700; color: var(--text2); }
-
-/* ════ ПРОФИЛЬ ════ */
-.profile-hero {
-  display: flex; align-items: center; gap: 14px;
-  margin-bottom: 0;
-}
-.profile-avatar {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--bg), var(--green));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px; font-weight: 900; color: #fff;
-  flex-shrink: 0;
-}
-.profile-name { font-size: 17px; font-weight: 800; color: var(--text); }
-.profile-sub { font-size: 13px; font-weight: 600; color: var(--text2); margin-top: 2px; }
-
-/* Параметры тела */
-.body-stats {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 8px; margin-top: 14px;
-}
-.body-stat {
-  background: #edf5ff; border-radius: 14px;
-  padding: 10px 8px; text-align: center;
-}
-.body-stat-val { font-size: 18px; font-weight: 900; color: var(--text); }
-.body-stat-label { font-size: 10px; font-weight: 700; color: var(--text2); margin-top: 1px; text-transform: uppercase; letter-spacing: 0.05em; }
-
-/* Цель / активность */
-.profile-tags { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 12px; }
-.profile-tag {
-  font-size: 12px; font-weight: 700;
-  background: #edf5ff; color: var(--text);
-  padding: 5px 11px; border-radius: 99px;
-}
-
-/* ════ ГЕЙМИФИКАЦИЯ ════ */
-.streak-row { display: flex; align-items: center; gap: 12px; }
-.streak-fire { font-size: 42px; line-height: 1; }
-.streak-info { flex: 1; }
-.streak-num { font-size: 30px; font-weight: 900; color: var(--orange); line-height: 1; }
-.streak-label { font-size: 12px; font-weight: 700; color: var(--text2); }
-.xp-chip {
-  background: linear-gradient(135deg, var(--orange), var(--yellow));
-  color: #fff; font-size: 13px; font-weight: 900;
-  padding: 7px 14px; border-radius: 99px;
-  box-shadow: 0 3px 10px rgba(245,166,35,0.35);
-}
-
-/* Уровень */
-.level-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.level-name { font-size: 15px; font-weight: 800; color: var(--text); }
-.level-xp { font-size: 12px; font-weight: 700; color: var(--text2); }
-.level-track { height: 9px; background: #e8f4ff; border-radius: 99px; overflow: hidden; }
-.level-fill {
-  height: 100%; border-radius: 99px;
-  background: linear-gradient(90deg, var(--orange), var(--yellow));
-  transition: width 0.7s ease;
-}
-
-/* Ачивки */
-.ach-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-.ach-item {
-  background: #edf5ff; border-radius: 13px;
-  padding: 9px 13px;
-  font-size: 12px; font-weight: 700; color: var(--text);
-  display: flex; align-items: center; gap: 6px;
-}
-.ach-empty { font-size: 13px; font-weight: 600; color: var(--text2); }
-
-/* Норма калорий */
-.calorie-goal-row {
-  display: flex; align-items: center; justify-content: space-between;
-  cursor: pointer; padding: 2px 0;
-}
-.calorie-goal-label { font-size: 14px; font-weight: 700; color: var(--text); }
-.calorie-goal-val { font-size: 14px; font-weight: 800; color: var(--bg); display: flex; align-items: center; gap: 4px; }
-
-/* ════ BOTTOM TABS ════ */
-.tabs {
-  position: fixed; bottom: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 100%; max-width: 480px;
-  background: var(--card);
-  display: flex;
-  padding: 8px 8px 22px;
-  z-index: 100;
-  box-shadow: 0 -4px 20px rgba(3,60,110,0.1);
-  border-radius: 24px 24px 0 0;
-}
-.tab {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; gap: 3px; padding: 6px;
-  cursor: pointer; color: var(--text3);
-  transition: color 0.15s;
-}
-.tab.active { color: var(--bg); }
-.tab-icon { font-size: 22px; line-height: 1; }
-.tab-label { font-size: 10px; font-weight: 800; }
-
-/* ════ MODALS ════ */
-.modal-backdrop {
-  display: none; position: fixed; inset: 0;
-  background: rgba(10,50,90,0.45);
-  z-index: 200; align-items: flex-end;
-  backdrop-filter: blur(3px);
-}
-.modal-backdrop.open { display: flex; }
-.modal-sheet {
-  background: var(--card);
-  border-radius: 24px 24px 0 0;
-  padding: 20px 20px 44px;
-  width: 100%;
-}
-.modal-handle { width: 36px; height: 4px; background: #dde8f0; border-radius: 2px; margin: 0 auto 16px; }
-.modal-title { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 14px; text-align: center; }
-.modal-input {
-  width: 100%; border: 2px solid #dde8f0; border-radius: 14px;
-  padding: 14px; font-family: 'Nunito', sans-serif;
-  font-size: 20px; font-weight: 800; text-align: center;
-  outline: none; color: var(--text);
-  transition: border-color 0.15s;
-}
-.modal-input:focus { border-color: var(--bg); }
-.modal-btn {
-  width: 100%; background: var(--bg); color: #fff;
-  border: none; border-radius: 14px; padding: 15px;
-  font-family: 'Nunito', sans-serif;
-  font-size: 16px; font-weight: 800;
-  cursor: pointer; margin-top: 12px;
-  box-shadow: 0 4px 14px rgba(5,157,250,0.4);
-}
-
-/* Detail sheet */
-.detail-backdrop {
-  display: none; position: fixed; inset: 0;
-  background: rgba(10,50,90,0.45);
-  z-index: 200; align-items: flex-end;
-  backdrop-filter: blur(3px);
-}
-.detail-backdrop.open { display: flex; }
-.detail-sheet {
-  background: var(--card); border-radius: 24px 24px 0 0;
-  padding: 20px 20px 48px; width: 100%;
-  max-height: 80vh; overflow-y: auto;
-}
-.detail-handle { width: 36px; height: 4px; background: #dde8f0; border-radius: 2px; margin: 0 auto 16px; }
-.detail-name { font-size: 20px; font-weight: 900; color: var(--text); margin-bottom: 3px; }
-.detail-time { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 14px; }
-.detail-kcal-big { font-size: 40px; font-weight: 900; color: var(--bg); line-height: 1; }
-.detail-kcal-label { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 14px; }
-.detail-kbju { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-.detail-kbju-item { background: #edf5ff; border-radius: 13px; padding: 10px; text-align: center; }
-.detail-kbju-val { font-size: 18px; font-weight: 900; }
-.detail-kbju-name { font-size: 11px; font-weight: 700; color: var(--text2); margin-top: 2px; }
-.ingredients-title { font-size: 13px; font-weight: 800; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.07em; }
-.ingredient-row {
-  display: flex; justify-content: space-between;
-  padding: 9px 0; border-bottom: 1px solid #edf5ff;
-  font-size: 14px;
-}
-.ingredient-row:last-child { border-bottom: none; }
-.ingredient-name { color: var(--text); font-weight: 700; }
-.ingredient-val { color: var(--text2); font-weight: 600; }
-.delete-btn {
-  width: 100%; background: #fff5f5;
-  border: 1.5px solid #ffd0d0; border-radius: 13px;
-  padding: 12px; font-family: 'Nunito', sans-serif;
-  font-size: 14px; font-weight: 800; color: var(--red);
-  cursor: pointer; margin-top: 12px;
-}
-
-/* skeleton */
-.skeleton {
-  background: linear-gradient(90deg, #edf5ff 25%, #ddeeff 50%, #edf5ff 75%);
-  background-size: 200% 100%; animation: shimmer 1.2s infinite;
-  border-radius: 8px;
-}
-@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-</style>
+    /* PROFILE */
+    .profile-content{padding:0 14px;display:flex;flex-direction:column;gap:12px;}
+    .profile-hero{border-radius:var(--radius);padding:20px;text-align:center;}
+    .profile-avatar{font-size:56px;line-height:1;margin-bottom:10px;}
+    .profile-name{font-weight:900;font-size:20px;color:var(--text);}
+    .profile-level{font-size:14px;font-weight:700;color:var(--blue-dark);margin-top:4px;}
+    .profile-xp-bar-wrap{background:rgba(2,136,209,.12);border-radius:10px;height:8px;margin:12px 0 4px;overflow:hidden;}
+    .profile-xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-dark),var(--blue));border-radius:10px;transition:width .8s ease;}
+    .profile-xp-txt{font-size:12px;font-weight:700;color:var(--muted);}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .stat-item{border-radius:16px;padding:14px;text-align:center;}
+    .stat-val{font-size:22px;font-weight:900;color:var(--blue-dark);}
+    .stat-label{font-size:11px;font-weight:700;color:var(--muted);margin-top:2px;}
+    .goals-card{border-radius:var(--radius);padding:16px 18px;}
+    .goals-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;}
+    .goal-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(2,136,209,.07);}
+    .goal-row:last-child{border-bottom:none;}
+    .goal-key{font-size:13px;font-weight:700;color:var(--muted);}
+    .goal-val{font-size:14px;font-weight:800;color:var(--text);}
+    .ach-grid{display:flex;flex-wrap:wrap;gap:10px;}
+    .ach-item{border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:8px;flex:1;min-width:140px;}
+    .ach-icon{font-size:24px;}
+    .ach-info{flex:1;min-width:0;}
+    .ach-name{font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .ach-desc{font-size:11px;font-weight:600;color:var(--muted);margin-top:1px;}
+    .ach-item.locked{opacity:.45;filter:grayscale(1);}
+  </style>
 </head>
 <body>
+<div id="app">
 
-<!-- ═══ TOPBAR ═══ -->
-<div class="topbar" id="topbar">
-  <div class="topbar-nav" id="nav-prev" style="visibility:visible">‹</div>
-  <div class="topbar-logo">Yummy<em>🍉</em>Bot</div>
-  <div class="topbar-nav" id="nav-next" style="visibility:visible">›</div>
-</div>
-
-<!-- ═══ PAGE: СЕГОДНЯ ═══ -->
-<div class="content active" id="page-today">
-
-  <div class="card ring-card">
-    <div class="ring-wrap">
-      <svg width="114" height="114" viewBox="0 0 114 114" style="position:absolute;top:0;left:0">
-        <!-- фон -->
-        <circle cx="57" cy="57" r="46" fill="none" stroke="#ddeeff" stroke-width="11"/>
-        <!-- БЕЛКИ -->
-        <circle id="ring-p" cx="57" cy="57" r="46" fill="none"
-          stroke="#4bbf73" stroke-width="11" stroke-linecap="round"
-          stroke-dasharray="289.0" stroke-dashoffset="289.0"
-          style="transform:rotate(-90deg);transform-origin:57px 57px;transition:stroke-dashoffset .7s ease"/>
-        <!-- ЖИРЫ -->
-        <circle id="ring-f" cx="57" cy="57" r="46" fill="none"
-          stroke="#f5a623" stroke-width="11" stroke-linecap="round"
-          stroke-dasharray="289.0" stroke-dashoffset="289.0"
-          style="transform:rotate(-90deg);transform-origin:57px 57px;transition:stroke-dashoffset .7s ease .1s"/>
-        <!-- УГЛЕВОДЫ -->
-        <circle id="ring-c" cx="57" cy="57" r="46" fill="none"
-          stroke="#059dfa" stroke-width="11" stroke-linecap="round"
-          stroke-dasharray="289.0" stroke-dashoffset="289.0"
-          style="transform:rotate(-90deg);transform-origin:57px 57px;transition:stroke-dashoffset .7s ease .2s"/>
-      </svg>
-      <div class="ring-center">
-        <div class="ring-kcal" id="ring-kcal">0</div>
-        <div class="ring-goal" id="ring-goal">ккал</div>
+  <!-- DIARY -->
+  <div class="page active" id="page-diary">
+    <div class="page-header">
+      <div class="header-top">
+        <div class="logo-wrap">
+          <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
+          <div class="logo-text">YummyTo<span>Дневник питания</span></div>
+        </div>
+        <div class="header-badge glass" id="streak-badge">🔥 — дней</div>
+      </div>
+      <div class="diary-header-inner">
+        <div class="calorie-block">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 120 120" width="130" height="130">
+              <circle class="ring-bg" cx="60" cy="60" r="55"/>
+              <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="55"/>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-kcal" id="ring-kcal">—</div>
+              <div class="ring-label" id="ring-label">ккал сегодня</div>
+            </div>
+          </div>
+          <div class="macro-mini">
+            <div class="macro-mini-item">
+              <div class="macro-dot" style="background:#66bb6a"></div>
+              Белки <span id="m-protein">—</span>г
+              <div class="macro-mini-bar"><div class="macro-mini-bar-fill" id="bar-protein" style="width:0%;background:#66bb6a"></div></div>
+            </div>
+            <div class="macro-mini-item">
+              <div class="macro-dot" style="background:#ffa726"></div>
+              Жиры <span id="m-fat">—</span>г
+              <div class="macro-mini-bar"><div class="macro-mini-bar-fill" id="bar-fat" style="width:0%;background:#ffa726"></div></div>
+            </div>
+            <div class="macro-mini-item">
+              <div class="macro-dot" style="background:rgba(255,255,255,0.9)"></div>
+              Углеводы <span id="m-carbs">—</span>г
+              <div class="macro-mini-bar"><div class="macro-mini-bar-fill" id="bar-carbs" style="width:0%;background:rgba(255,255,255,0.85)"></div></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div style="flex:1">
-      <div class="kbju-list">
+    <div class="date-nav">
+      <button class="glass" id="btn-prev">‹</button>
+      <div class="date-today" id="date-label">Сегодня</div>
+      <button class="glass" id="btn-next">›</button>
+    </div>
+
+    <div class="xp-card glass-card" id="xp-card" style="display:none">
+      <div class="xp-emoji" id="xp-emoji">🥚</div>
+      <div class="xp-info">
+        <div class="xp-level-name" id="xp-level-name">—</div>
+        <div class="xp-bar-wrap"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
+        <div class="xp-pts" id="xp-pts">— XP</div>
+      </div>
+    </div>
+
+    <div class="section-title">Приёмы пищи</div>
+    <div id="diary-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
+    <div class="meal-list" id="meal-list" style="display:none"></div>
+
+    <button class="add-btn" onclick="Telegram?.WebApp?.close()">
+      <span style="font-size:20px">📷</span> Добавить приём пищи
+    </button>
+
+    <div class="weekly-card glass-card" id="weekly-card" style="display:none">
+      <div class="weekly-title">Активность за неделю</div>
+      <div class="weekly-bars" id="weekly-bars"></div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div class="page" id="page-analytics">
+    <div class="page-header">
+      <div class="header-top">
+        <div class="logo-wrap">
+          <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
+          <div class="logo-text">YummyTo<span>Аналитика</span></div>
+        </div>
+      </div>
+      <div class="page-title">📊 Анализ питания</div>
+    </div>
+    <div id="analytics-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
+    <div class="analytics-grid" id="analytics-content" style="display:none">
+      <div class="an-card glass-card">
+        <div class="an-title">КБЖУ за 7 дней (среднее)</div>
         <div class="kbju-row">
-          <div class="kbju-dot" style="background:#4bbf73"></div>
-          <div class="kbju-name">Белки</div>
-          <div class="kbju-bar-wrap"><div class="kbju-bar" id="bar-p" style="background:#4bbf73;width:0%"></div></div>
-          <div class="kbju-val" id="kbju-p">0 г</div>
+          <div class="kbju-item">
+            <div class="donut-wrap">
+              <svg viewBox="0 0 60 60" width="72" height="72">
+                <circle class="donut-bg" cx="30" cy="30" r="26" stroke="rgba(102,187,106,.2)"/>
+                <circle class="donut-fill" id="d-protein" cx="30" cy="30" r="26" stroke="#66bb6a"/>
+              </svg>
+              <div class="donut-label"><div class="donut-val" id="dv-protein" style="color:#388e3c">—</div><div class="donut-unit">г</div></div>
+            </div>
+            <div class="kbju-name" style="color:#388e3c">Белки</div>
+          </div>
+          <div class="kbju-item">
+            <div class="donut-wrap">
+              <svg viewBox="0 0 60 60" width="72" height="72">
+                <circle class="donut-bg" cx="30" cy="30" r="26" stroke="rgba(255,167,38,.2)"/>
+                <circle class="donut-fill" id="d-fat" cx="30" cy="30" r="26" stroke="#ffa726"/>
+              </svg>
+              <div class="donut-label"><div class="donut-val" id="dv-fat" style="color:#e65100">—</div><div class="donut-unit">г</div></div>
+            </div>
+            <div class="kbju-name" style="color:#e65100">Жиры</div>
+          </div>
+          <div class="kbju-item">
+            <div class="donut-wrap">
+              <svg viewBox="0 0 60 60" width="72" height="72">
+                <circle class="donut-bg" cx="30" cy="30" r="26" stroke="rgba(41,182,246,.2)"/>
+                <circle class="donut-fill" id="d-carbs" cx="30" cy="30" r="26" stroke="#29b6f6"/>
+              </svg>
+              <div class="donut-label"><div class="donut-val" id="dv-carbs" style="color:#0277bd">—</div><div class="donut-unit">г</div></div>
+            </div>
+            <div class="kbju-name" style="color:#0277bd">Углеводы</div>
+          </div>
         </div>
-        <div class="kbju-row">
-          <div class="kbju-dot" style="background:#f5a623"></div>
-          <div class="kbju-name">Жиры</div>
-          <div class="kbju-bar-wrap"><div class="kbju-bar" id="bar-f" style="background:#f5a623;width:0%"></div></div>
-          <div class="kbju-val" id="kbju-f">0 г</div>
-        </div>
-        <div class="kbju-row">
-          <div class="kbju-dot" style="background:#059dfa"></div>
-          <div class="kbju-name">Углеводы</div>
-          <div class="kbju-bar-wrap"><div class="kbju-bar" id="bar-c" style="background:#059dfa;width:0%"></div></div>
-          <div class="kbju-val" id="kbju-c">0 г</div>
+      </div>
+      <div class="an-card glass-card">
+        <div class="an-title">Калории по дням (14 дней)</div>
+        <div class="line-chart-wrap">
+          <svg class="line-chart-svg" id="line-chart" height="120"></svg>
         </div>
       </div>
-      <div class="goal-progress" id="goal-progress-wrap" style="display:none">
-        <div class="goal-progress-top">
-          <span>До нормы</span>
-          <span id="goal-progress-label">0 / 0 ккал</span>
+      <div class="an-card glass-card">
+        <div class="an-title">🍽 Топ-10 блюд</div>
+        <div id="top-dishes"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="page" id="page-leaderboard">
+    <div class="page-header">
+      <div class="header-top">
+        <div class="logo-wrap">
+          <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
+          <div class="logo-text">YummyTo<span>Рейтинг</span></div>
         </div>
-        <div class="goal-track"><div class="goal-fill" id="goal-fill" style="width:0%"></div></div>
+      </div>
+      <div class="page-title">🏆 Лидерборд</div>
+    </div>
+    <div id="lb-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
+    <div class="lb-list" id="lb-list" style="display:none"></div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="page" id="page-profile">
+    <div class="page-header">
+      <div class="header-top">
+        <div class="logo-wrap">
+          <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
+          <div class="logo-text">YummyTo<span>Профиль</span></div>
+        </div>
+      </div>
+      <div class="page-title">👤 Мой профиль</div>
+    </div>
+    <div id="profile-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
+    <div class="profile-content" id="profile-content" style="display:none">
+      <div class="profile-hero glass-card">
+        <div class="profile-avatar" id="p-avatar">🥚</div>
+        <div class="profile-name" id="p-name">—</div>
+        <div class="profile-level" id="p-level">—</div>
+        <div class="profile-xp-bar-wrap"><div class="profile-xp-bar-fill" id="p-xp-bar" style="width:0%"></div></div>
+        <div class="profile-xp-txt" id="p-xp-txt">— XP</div>
+      </div>
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="goals-card glass-card">
+        <div class="goals-title">Мои цели и параметры</div>
+        <div id="goals-rows"></div>
+      </div>
+      <div class="goals-card glass-card">
+        <div class="goals-title">🏅 Достижения</div>
+        <div class="ach-grid" id="ach-grid"></div>
       </div>
     </div>
-  </div>
-
-  <div class="section-label">Приёмы пищи</div>
-  <div class="card" id="meals-list" style="padding:0 0">
-    <div class="empty-state">
-      <div class="empty-state-icon">🍽</div>
-      <div class="empty-state-text">Запишите первый приём пищи<br>прямо в боте 📸</div>
-    </div>
-  </div>
-
-  <button class="add-btn" onclick="openCamera()">📷 Добавить фото еды</button>
-</div>
-
-<!-- ═══ PAGE: ИСТОРИЯ ═══ -->
-<div class="content" id="page-history">
-  <div class="day-scroll" id="day-pills"></div>
-
-  <div class="card">
-    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">Калории за неделю</div>
-    <div class="bars" id="week-bars"></div>
-  </div>
-
-  <div class="section-label">Записи</div>
-  <div class="card" style="padding:0" id="history-meals-list">
-    <div class="empty-state">
-      <div class="empty-state-icon">📅</div>
-      <div class="empty-state-text">Нет записей за этот день</div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ PAGE: ПРОФИЛЬ ═══ -->
-<div class="content" id="page-profile">
-
-  <!-- Аватар + имя -->
-  <div class="card">
-    <div class="profile-hero">
-      <div class="profile-avatar" id="profile-avatar">?</div>
-      <div>
-        <div class="profile-name" id="profile-name">Пользователь</div>
-        <div class="profile-sub" id="profile-sub">YummyToBot</div>
-      </div>
-    </div>
-    <div class="body-stats" id="body-stats" style="display:none">
-      <div class="body-stat">
-        <div class="body-stat-val" id="stat-age">—</div>
-        <div class="body-stat-label">лет</div>
-      </div>
-      <div class="body-stat">
-        <div class="body-stat-val" id="stat-height">—</div>
-        <div class="body-stat-label">см рост</div>
-      </div>
-      <div class="body-stat">
-        <div class="body-stat-val" id="stat-weight">—</div>
-        <div class="body-stat-label">кг вес</div>
-      </div>
-    </div>
-    <div class="profile-tags" id="profile-tags"></div>
-  </div>
-
-  <!-- Норма калорий -->
-  <div class="card">
-    <div class="calorie-goal-row" onclick="openGoalModal()">
-      <div class="calorie-goal-label">🔥 Норма в день</div>
-      <div class="calorie-goal-val">
-        <span id="goal-display">—</span> ккал
-        <span style="color:var(--text3);font-size:16px">›</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Стрик + XP -->
-  <div class="section-label">Прогресс</div>
-  <div class="card">
-    <div class="streak-row">
-      <div class="streak-fire">🔥</div>
-      <div class="streak-info">
-        <div class="streak-num" id="streak-num">0</div>
-        <div class="streak-label">дней подряд</div>
-      </div>
-      <div class="xp-chip" id="xp-chip">0 XP</div>
-    </div>
-  </div>
-
-  <!-- Уровень -->
-  <div class="card">
-    <div class="level-header">
-      <div class="level-name" id="level-name">🥚 Новичок</div>
-      <div class="level-xp" id="level-xp">0 XP</div>
-    </div>
-    <div class="level-track">
-      <div class="level-fill" id="level-fill" style="width:0%"></div>
-    </div>
-  </div>
-
-  <!-- Ачивки -->
-  <div class="card">
-    <div style="font-size:13px;font-weight:800;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.07em">🏅 Ачивки</div>
-    <div class="ach-grid" id="ach-grid">
-      <div class="ach-empty">Записывай еду — и ачивки появятся!</div>
-    </div>
-  </div>
-
-  <!-- Открыть бота -->
-  <div class="card" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="openInBot()">
-    <div style="font-size:14px;font-weight:700;color:var(--text)">Открыть бота</div>
-    <div style="font-size:14px;font-weight:700;color:var(--bg)">@YummyToBot ›</div>
   </div>
 
 </div>
 
-<!-- ═══ BOTTOM TABS ═══ -->
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('today',this)">
-    <div class="tab-icon">🏠</div>
-    <div class="tab-label">Сегодня</div>
-  </div>
-  <div class="tab" onclick="switchTab('history',this)">
-    <div class="tab-icon">📅</div>
-    <div class="tab-label">История</div>
-  </div>
-  <div class="tab" onclick="switchTab('profile',this)">
-    <div class="tab-icon">👤</div>
-    <div class="tab-label">Профиль</div>
-  </div>
-</div>
-
-<!-- ═══ GOAL MODAL ═══ -->
-<div class="modal-backdrop" id="goal-modal" onclick="closeModal('goal-modal',event)">
-  <div class="modal-sheet" onclick="e=>e.stopPropagation()">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Норма калорий в день</div>
-    <input class="modal-input" type="number" id="goal-input" placeholder="2000" min="500" max="9999">
-    <button class="modal-btn" onclick="saveGoal()">Сохранить</button>
-  </div>
-</div>
-
-<!-- ═══ DETAIL MODAL ═══ -->
-<div class="detail-backdrop" id="detail-modal" onclick="closeModal('detail-modal',event)">
-  <div class="detail-sheet" onclick="e=>e.stopPropagation()">
-    <div class="detail-handle"></div>
-    <div class="detail-name" id="detail-name"></div>
-    <div class="detail-time" id="detail-time"></div>
-    <div class="detail-kcal-big" id="detail-kcal"></div>
-    <div class="detail-kcal-label">ккал</div>
-    <div class="detail-kbju">
-      <div class="detail-kbju-item">
-        <div class="detail-kbju-val" id="detail-p" style="color:#4bbf73"></div>
-        <div class="detail-kbju-name">Белки</div>
-      </div>
-      <div class="detail-kbju-item">
-        <div class="detail-kbju-val" id="detail-f" style="color:#f5a623"></div>
-        <div class="detail-kbju-name">Жиры</div>
-      </div>
-      <div class="detail-kbju-item">
-        <div class="detail-kbju-val" id="detail-c" style="color:#059dfa"></div>
-        <div class="detail-kbju-name">Углеводы</div>
-      </div>
-    </div>
-    <div id="detail-ingredients-block"></div>
-    <button class="delete-btn" id="detail-delete-btn">🗑 Удалить запись</button>
-  </div>
+<div class="bottom-nav">
+  <div class="nav-item active" data-page="diary"><div class="nav-icon">📋</div>Дневник</div>
+  <div class="nav-item" data-page="analytics"><div class="nav-icon">📊</div>Анализ</div>
+  <div class="nav-item" data-page="leaderboard"><div class="nav-icon">🏆</div>Рейтинг</div>
+  <div class="nav-item" data-page="profile"><div class="nav-icon">👤</div>Профиль</div>
 </div>
 
 <script>
-const API = 'https://yummytobot.duckdns.org/api';
-let tg = window.Telegram?.WebApp;
-let userId = null;
-let goalKcal = 0;
-let todayMeals = [], historyMeals = [];
-let selectedDay = 0, currentDateOffset = 0, currentMealId = null;
+const BASE = 'https://yummytobot.duckdns.org/api/';
 
-const CIRC = 2 * Math.PI * 46; // 289.0
+const $ = id => document.getElementById(id);
+const DAYS_SHORT = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const LEVELS = [
+  [0,'🥚','Новичок'],[100,'🍗','Едок'],[300,'🥗','Здоровяк'],
+  [700,'💪','Атлет'],[1500,'🏆','Чемпион'],[3000,'👑','Легенда']
+];
+const ACHIEVEMENTS = {
+  first_bite:    ['🍽','Первый укус','Записал первый приём пищи'],
+  streak_3:      ['🔥','Тройка','3 дня стрика подряд'],
+  streak_7:      ['🔥🔥','Недельный воин','7 дней стрика подряд'],
+  streak_30:     ['🔥🔥🔥','Месяц без срыва','30 дней подряд'],
+  photo_10:      ['📸','Фотограф','10 фото еды'],
+  early_bird:    ['🌅','Ранняя пташка','Завтрак до 9:00 три дня'],
+  protein_beast: ['💪','Белковый зверь','Норма белка 3 дня'],
+  goal_done_7:   ['🎯','На цели неделю','7 дней в норме калорий'],
+  hundred_meals: ['🍱','Сотня','100 приёмов пищи'],
+};
 
-// ─── INIT TG ───
-function parseTgUser() {
-  // Способ 1: initDataUnsafe (работает в большинстве клиентов)
-  const unsafe = tg?.initDataUnsafe?.user;
-  if (unsafe?.id) return unsafe;
-
-  // Способ 2: парсим initData вручную (надёжнее)
-  try {
-    const raw = tg?.initData || '';
-    const params = new URLSearchParams(raw);
-    const userStr = params.get('user');
-    if (userStr) return JSON.parse(decodeURIComponent(userStr));
-  } catch(e) {}
-
-  return null;
-}
-
-if (tg) {
-  tg.ready(); tg.expand();
-  const u = parseTgUser();
-  if (u) {
-    userId = String(u.id);
-    document.getElementById('profile-name').textContent =
-      [u.first_name, u.last_name].filter(Boolean).join(' ');
-    document.getElementById('profile-avatar').textContent =
-      (u.first_name || '?')[0].toUpperCase();
-    document.getElementById('profile-sub').textContent =
-      u.username ? '@' + u.username : 'YummyToBot';
+function getLevel(xp){
+  let cur=LEVELS[0],nxt=LEVELS[1];
+  for(let i=0;i<LEVELS.length;i++){
+    if(xp>=LEVELS[i][0]){cur=LEVELS[i];nxt=LEVELS[i+1]||null;}
   }
+  return {emoji:cur[1],name:cur[2],minXp:cur[0],nextXp:nxt?nxt[0]:null};
 }
 
-// DEBUG: раскомментируй чтобы проверить что userId получен
-// console.log('userId:', userId, 'initData:', tg?.initData?.slice(0,80));
-
-// ─── HELPERS ───
-function getDateStr(daysAgo) {
-  const d = new Date();
-  d.setDate(d.getDate() - daysAgo);
-  // Локальная дата устройства (не UTC) — важно для пользователей в МСК
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return y + '-' + m + '-' + day;
-}
-function fmtTime(iso) {
-  return new Date(iso).toLocaleTimeString('ru', {hour:'2-digit',minute:'2-digit'});
-}
-function todayLabel() {
-  if (currentDateOffset === 0) return 'Сегодня';
-  const d = new Date();
-  d.setDate(d.getDate() - currentDateOffset);
-  return d.toLocaleDateString('ru', {day:'numeric', month:'long'});
-}
-const EMOJIS = ['🍗','🥗','🍲','🥩','🍝','🥞','🍜','🥘','🍱','🥙','🌮','🫕'];
-function mealEmoji(name) {
-  let h = 0;
-  for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffffffff;
-  return EMOJIS[Math.abs(h) % EMOJIS.length];
+async function api(path){
+  const r=await fetch(BASE+path);
+  if(!r.ok) throw new Error(r.status);
+  return r.json();
 }
 
-// ─── RING (трёхсегментное) ───
-function updateRing(p, f, c, kcal, goal) {
-  const total = (p * 4 + f * 9 + c * 4) || 1;
-  const gap = 6;
-  const pLen = Math.max((p * 4 / total) * (CIRC - 3 * gap), 0);
-  const fLen = Math.max((f * 9 / total) * (CIRC - 3 * gap), 0);
-  const cLen = Math.max((c * 4 / total) * (CIRC - 3 * gap), 0);
-
-  // offset считаем от 0 (12 часов = -90deg уже задан transform)
-  const pOff = 0;
-  const fOff = -(pLen + gap);
-  const cOff = -(pLen + gap + fLen + gap);
-
-  setArc('ring-p', pLen, pOff);
-  setArc('ring-f', fLen, fOff);
-  setArc('ring-c', cLen, cOff);
-
-  document.getElementById('ring-kcal').textContent = Math.round(kcal);
-
-  if (goal) {
-    const pct = Math.min(kcal / goal * 100, 100);
-    document.getElementById('ring-goal').textContent = `из ${goal} ккал`;
-    document.getElementById('goal-progress-wrap').style.display = '';
-    document.getElementById('goal-fill').style.width = pct + '%';
-    document.getElementById('goal-progress-label').textContent =
-      `${Math.round(kcal)} / ${goal} ккал`;
-  } else {
-    document.getElementById('ring-goal').textContent = 'ккал';
+/* ── displayName для лидерборда:
+   Берёт first_name из API (если есть), иначе берёт username
+   и показывает только первое слово с заглавной буквы.
+   username никогда не светится полностью. ── */
+function displayName(u){
+  // если API вернул first_name — используем его
+  if(u.first_name && u.first_name.trim()){
+    // показываем имя + первую букву фамилии если есть
+    const parts = u.first_name.trim().split(' ');
+    if(parts.length>=2) return `${parts[0]} ${parts[1][0]}.`;
+    return parts[0];
   }
+  // fallback: username без @ и только первые символы
+  const clean=(u.username||'Игрок').replace(/^@/,'');
+  if(clean.length<=3) return clean;
+  return clean[0].toUpperCase()+clean.slice(1,3)+'***';
 }
 
-function setArc(id, len, offset) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (len < 1) {
-    el.setAttribute('stroke-dasharray', `0 ${CIRC}`);
-    el.setAttribute('stroke-dashoffset', '0');
-    return;
+/* ── NAV ── */
+const pageLoaded={};
+document.querySelectorAll('.nav-item').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const pg=el.dataset.page;
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-'+pg).classList.add('active');
+    if(!pageLoaded[pg]){pageLoaded[pg]=true;loadPage(pg);}
+  });
+});
+function loadPage(pg){
+  if(pg==='analytics') loadAnalytics();
+  if(pg==='leaderboard') loadLeaderboard();
+  if(pg==='profile') loadProfile();
+}
+
+/* ── DIARY ── */
+let dateOffset=0;
+function formatDate(offset){const d=new Date();d.setDate(d.getDate()+offset);return d;}
+function dateStr(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
+}
+function dateLabelStr(d,offset){
+  if(offset===0) return `Сегодня, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  if(offset===-1) return `Вчера, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  return `${DAYS_SHORT[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+
+$('btn-prev').onclick=()=>{dateOffset--;loadDiary();};
+$('btn-next').onclick=()=>{if(dateOffset<0){dateOffset++;loadDiary();}};
+
+const MEAL_ICONS=['🥣','🍳','🥗','🍗','🥩','🍝','🍜','🥘','🥙','🌮','🥪','🍱','🥞','🍚','🍲'];
+function mealIcon(name){
+  const n=name.toLowerCase();
+  if(n.includes('каш')||n.includes('овс')) return '🥣';
+  if(n.includes('яйц')||n.includes('омлет')) return '🍳';
+  if(n.includes('салат')) return '🥗';
+  if(n.includes('кур')||n.includes('грудк')) return '🍗';
+  if(n.includes('рис')) return '🍚';
+  if(n.includes('суп')||n.includes('борщ')) return '🍲';
+  if(n.includes('паст')||n.includes('макар')) return '🍝';
+  if(n.includes('хлеб')||n.includes('бутерброд')) return '🥪';
+  if(n.includes('батончик')||n.includes('протеин')) return '🥜';
+  if(n.includes('банан')||n.includes('яблок')||n.includes('фрукт')) return '🍎';
+  if(n.includes('йогурт')||n.includes('творог')) return '🥛';
+  return MEAL_ICONS[Math.abs(name.charCodeAt(0))%MEAL_ICONS.length];
+}
+function mealTimeLabel(isoStr){
+  if(!isoStr) return '';
+  const d=new Date(isoStr);
+  const h=d.getHours();
+  const t=`${String(h).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  if(h<11) return `🌅 Завтрак · ${t}`;
+  if(h<14) return `☀️ Обед · ${t}`;
+  if(h<17) return `🌤 Перекус · ${t}`;
+  return `🌙 Ужин · ${t}`;
+}
+
+let _usersCache=null;
+async function getUsers(){
+  if(_usersCache) return _usersCache;
+  _usersCache=await api('users');
+  return _usersCache;
+}
+let _resolvedUid=null;
+async function resolveUserId(){
+  if(_resolvedUid) return _resolvedUid;
+  const tgUser=window.Telegram?.WebApp?.initDataUnsafe?.user;
+  // Способ 1: по числовому id из initDataUnsafe (самый надёжный)
+  if(tgUser?.id){
+    const users=await getUsers();
+    const found=users.find(u=>String(u.id)===String(tgUser.id));
+    if(found){_resolvedUid=found.id;return found.id;}
   }
-  el.setAttribute('stroke-dasharray', `${len} ${CIRC - len}`);
-  el.setAttribute('stroke-dashoffset', String(offset));
-}
-
-// ─── LOAD TODAY ───
-async function loadToday() {
-  document.getElementById('meals-list').innerHTML = `
-    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
-      <div class="skeleton" style="height:14px;width:60%"></div>
-      <div class="skeleton" style="height:11px;width:40%;margin-top:4px"></div>
-    </div>`;
-  try {
-    if (!userId) throw new Error('no user');
-    const url = `${API}/meals-by-date?user_id=${userId}&date=${getDateStr(currentDateOffset)}`;
-    console.log('[YummyToBot] loadToday URL:', url);
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const raw = await res.json();
-    console.log('[YummyToBot] meals response:', raw);
-    todayMeals = Array.isArray(raw) ? raw : [];
-  } catch(e) {
-    console.warn('[YummyToBot] loadToday error:', e);
-    todayMeals = [];
-  }
-  renderToday();
-}
-
-function renderToday() {
-  const kcal = todayMeals.reduce((s, m) => s + (m.calories_kcal || 0), 0);
-  const p    = todayMeals.reduce((s, m) => s + (m.protein_g || 0), 0);
-  const f    = todayMeals.reduce((s, m) => s + (m.fat_g || 0), 0);
-  const c    = todayMeals.reduce((s, m) => s + (m.carbs_g || 0), 0);
-  const maxG = Math.max(p, f, c, 1);
-
-  updateRing(p, f, c, kcal, goalKcal);
-
-  document.getElementById('kbju-p').textContent = Math.round(p) + ' г';
-  document.getElementById('kbju-f').textContent = Math.round(f) + ' г';
-  document.getElementById('kbju-c').textContent = Math.round(c) + ' г';
-  document.getElementById('bar-p').style.width = (p / maxG * 100) + '%';
-  document.getElementById('bar-f').style.width = (f / maxG * 100) + '%';
-  document.getElementById('bar-c').style.width = (c / maxG * 100) + '%';
-
-  const list = document.getElementById('meals-list');
-  if (!todayMeals.length) {
-    list.innerHTML = `<div class="empty-state">
-      <div class="empty-state-icon">🍽</div>
-      <div class="empty-state-text">Запишите первый приём пищи<br>прямо в боте 📸</div>
-    </div>`;
-    return;
-  }
-  list.innerHTML = todayMeals.map(m => `
-    <div class="meal-item" onclick="openDetail(${m.id},'today')">
-      <div class="meal-emoji">${mealEmoji(m.dish_name)}</div>
-      <div class="meal-info">
-        <div class="meal-name">${m.dish_name}</div>
-        <div class="meal-meta">${fmtTime(m.eaten_at)} · Б${Math.round(m.protein_g)} Ж${Math.round(m.fat_g)} У${Math.round(m.carbs_g)}</div>
-      </div>
-      <div class="meal-kcal-wrap">
-        <div class="meal-kcal">${Math.round(m.calories_kcal)}</div>
-        <div class="meal-kcal-sub">ккал</div>
-      </div>
-    </div>`).join('');
-}
-
-// ─── HISTORY ───
-function buildDayPills() {
-  const container = document.getElementById('day-pills');
-  container.innerHTML = '';
-  const days = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-  const today = new Date();
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const pill = document.createElement('div');
-    pill.className = 'day-pill' + (i === 0 ? ' active' : '');
-    pill.innerHTML = `<div class="day-pill-name">${days[d.getDay()]}</div><div class="day-pill-num">${d.getDate()}</div>`;
-    pill.onclick = () => {
-      document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      selectedDay = i;
-      loadHistoryDay(i);
-    };
-    container.appendChild(pill);
-  }
-}
-
-async function loadHistoryDay(daysAgo) {
-  try {
-    if (!userId) throw new Error('no user');
-    const res = await fetch(`${API}/meals-by-date?user_id=${userId}&date=${getDateStr(daysAgo)}`);
-    historyMeals = await res.json();
-  } catch { historyMeals = []; }
-  const list = document.getElementById('history-meals-list');
-  if (!historyMeals.length) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📅</div><div class="empty-state-text">Нет записей за этот день</div></div>`;
-    return;
-  }
-  list.innerHTML = historyMeals.map(m => `
-    <div class="meal-item" onclick="openDetail(${m.id},'history')">
-      <div class="meal-emoji">${mealEmoji(m.dish_name)}</div>
-      <div class="meal-info">
-        <div class="meal-name">${m.dish_name}</div>
-        <div class="meal-meta">${fmtTime(m.eaten_at)} · ${Math.round(m.calories_kcal)} ккал</div>
-      </div>
-      <div class="meal-kcal-wrap">
-        <div class="meal-kcal">${Math.round(m.calories_kcal)}</div>
-        <div class="meal-kcal-sub">ккал</div>
-      </div>
-    </div>`).join('');
-}
-
-async function loadWeekChart() {
-  const bars = document.getElementById('week-bars');
-  const dayNames = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
-  let data = Array(7).fill(0);
-  try {
-    const res = await fetch(`${API}/activity?user_id=${userId}`);
-    const act = await res.json();
-    act.forEach(r => {
-      const d = new Date(r.day);
-      data[d.getDay() === 0 ? 6 : d.getDay() - 1] = r.count || 0;
-    });
-  } catch { data = [4,6,0,5,7,3,2]; }
-  const max = Math.max(...data, 1);
-  const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
-  bars.innerHTML = data.map((v, i) =>
-    `<div class="bar-col">
-      <div class="bar-fill${i===todayIdx?' today':''}" style="height:${Math.round(v/max*72)+4}px"></div>
-      <div class="bar-day">${dayNames[i]}</div>
-    </div>`).join('');
-}
-
-// ─── ПРОФИЛЬ ───
-async function loadProfile() {
-  if (!userId) return;
-  try {
-    const res = await fetch(`${API}/users`);
-    const users = await res.json();
-    const user = users.find(u => String(u.id) === String(userId));
-    if (!user) return;
-
-    goalKcal = user.calorie_goal || 0;
-    document.getElementById('goal-display').textContent = goalKcal || '—';
-
-    // параметры тела
-    if (user.age || user.height_cm || user.weight_kg) {
-      document.getElementById('body-stats').style.display = '';
-      document.getElementById('stat-age').textContent    = user.age || '—';
-      document.getElementById('stat-height').textContent = user.height_cm || '—';
-      document.getElementById('stat-weight').textContent = user.weight_kg ? Math.round(user.weight_kg) : '—';
-    }
-
-    // теги цель / активность
-    const GOAL_LABELS = {lose:'🔥 Похудеть',gain:'💪 Набор массы',maintain:'⚖️ Удержать вес',healthy:'🥗 Осознанно'};
-    const ACT_LABELS  = {sedentary:'🛋 Сижу',light:'🚶 Лёгкая',moderate:'🏃 Умеренная',high:'🏋️ Высокая'};
-    const tags = [];
-    if (user.goal)     tags.push(GOAL_LABELS[user.goal]     || user.goal);
-    if (user.activity) tags.push(ACT_LABELS[user.activity]  || user.activity);
-    if (user.gender)   tags.push(user.gender === 'male' ? '👨 М' : '👩 Ж');
-    if (tags.length) {
-      document.getElementById('profile-tags').innerHTML =
-        tags.map(t => `<div class="profile-tag">${t}</div>`).join('');
-    }
-
-    // стрик + XP
-    document.getElementById('streak-num').textContent = user.streak_days || 0;
-    document.getElementById('xp-chip').textContent    = (user.xp || 0) + ' XP';
-
-    // уровень
-    const LEVELS = [[0,'🥚 Новичок'],[100,'🍗 Едок'],[300,'🥗 Здоровяк'],[700,'💪 Атлет'],[1500,'🏆 Чемпион'],[3000,'👑 Легенда']];
-    const xp = user.xp || 0;
-    let lvName = LEVELS[0][1], lvMin = 0, lvNext = LEVELS[1][0];
-    for (let i = 0; i < LEVELS.length; i++) {
-      if (xp >= LEVELS[i][0]) {
-        lvName = LEVELS[i][1];
-        lvMin  = LEVELS[i][0];
-        lvNext = i + 1 < LEVELS.length ? LEVELS[i+1][0] : null;
+  // Способ 2: парсим initData вручную
+  try{
+    const params=new URLSearchParams(window.Telegram?.WebApp?.initData||'');
+    const userStr=params.get('user');
+    if(userStr){
+      const parsed=JSON.parse(decodeURIComponent(userStr));
+      if(parsed?.id){
+        const users=await getUsers();
+        const found=users.find(u=>String(u.id)===String(parsed.id));
+        if(found){_resolvedUid=found.id;return found.id;}
       }
     }
-    document.getElementById('level-name').textContent = lvName;
-    document.getElementById('level-xp').textContent   = lvNext ? `${xp} / ${lvNext} XP` : `${xp} XP 👑`;
-    document.getElementById('level-fill').style.width = lvNext
-      ? ((xp - lvMin) / (lvNext - lvMin) * 100) + '%' : '100%';
-
-    renderToday();
-  } catch(e) { console.warn('loadProfile:', e); }
-}
-
-// ─── DETAIL ───
-function openDetail(id, source) {
-  const pool = source === 'today' ? todayMeals : historyMeals;
-  const m = pool.find(x => x.id === id);
-  if (!m) return;
-  currentMealId = m.id;
-  document.getElementById('detail-name').textContent = m.dish_name;
-  document.getElementById('detail-time').textContent = fmtTime(m.eaten_at);
-  document.getElementById('detail-kcal').textContent = Math.round(m.calories_kcal);
-  document.getElementById('detail-p').textContent    = Math.round(m.protein_g) + ' г';
-  document.getElementById('detail-f').textContent    = Math.round(m.fat_g) + ' г';
-  document.getElementById('detail-c').textContent    = Math.round(m.carbs_g) + ' г';
-  const ing = m.ingredients || [];
-  const block = document.getElementById('detail-ingredients-block');
-  block.innerHTML = ing.length
-    ? `<div class="ingredients-title">Состав</div>` +
-      ing.map(i => `<div class="ingredient-row">
-        <span class="ingredient-name">${i.name}</span>
-        <span class="ingredient-val">${i.weight_g}г · ${Math.round(i.calories_kcal)} ккал</span>
-      </div>`).join('')
-    : '';
-  document.getElementById('detail-delete-btn').onclick = () => deleteMeal(m.id, source);
-  document.getElementById('detail-modal').classList.add('open');
-}
-
-async function deleteMeal(id, source) {
-  try { await fetch(`${API}/meals/${id}`, { method: 'DELETE' }); } catch {}
-  todayMeals    = todayMeals.filter(m => m.id !== id);
-  historyMeals  = historyMeals.filter(m => m.id !== id);
-  document.getElementById('detail-modal').classList.remove('open');
-  if (source === 'today') renderToday();
-  else loadHistoryDay(selectedDay);
-}
-
-// ─── MODALS ───
-function closeModal(id, e) {
-  if (e.target === document.getElementById(id))
-    document.getElementById(id).classList.remove('open');
-}
-function openGoalModal() {
-  document.getElementById('goal-input').value = goalKcal || '';
-  document.getElementById('goal-modal').classList.add('open');
-}
-function saveGoal() {
-  const v = parseInt(document.getElementById('goal-input').value);
-  if (!v || v < 500 || v > 9999) return;
-  goalKcal = v;
-  document.getElementById('goal-display').textContent = goalKcal;
-  document.getElementById('goal-modal').classList.remove('open');
-  renderToday();
-}
-
-// ─── CAMERA ───
-function openCamera() {
-  if (tg) tg.showAlert('Отправьте фото прямо в чат с ботом — бот автоматически его распознает 📸');
-  else alert('Отправьте фото в Telegram-бот для анализа');
-}
-function openInBot() { if (tg) tg.close(); }
-
-// ─── TOPBAR NAV ───
-document.getElementById('nav-prev').onclick = () => {
-  currentDateOffset++;
-  document.getElementById('topbar').querySelector('.topbar-logo').innerHTML =
-    `Yummy<em>🍉</em>Bot`;
-  loadToday();
-};
-document.getElementById('nav-next').onclick = () => {
-  if (currentDateOffset > 0) { currentDateOffset--; loadToday(); }
-};
-
-// ─── TABS ───
-function switchTab(name, el) {
-  document.querySelectorAll('.content').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  el.classList.add('active');
-
-  const showNav = name === 'today';
-  document.getElementById('nav-prev').style.visibility = showNav ? '' : 'hidden';
-  document.getElementById('nav-next').style.visibility = showNav ? '' : 'hidden';
-
-  if (name === 'history') { buildDayPills(); loadHistoryDay(0); loadWeekChart(); }
-  if (name === 'profile') loadProfile();
-}
-
-// ─── INIT ───
-// Ждём tg.ready(), потом грузим данные
-async function init() {
-  // Если TG WebApp — userId уже установлен синхронно выше.
-  // Если нет (браузер/тест) — можно задать userId вручную:
-  // userId = '123456789';
-
-  if (!userId) {
-    // Нет userId — просто рендерим пустой стейт
-    renderToday();
-    return;
+  }catch(e){}
+  // Способ 3: по username как fallback
+  if(tgUser?.username){
+    const users=await getUsers();
+    const found=users.find(u=>u.username===tgUser.username||u.username==='@'+tgUser.username);
+    if(found){_resolvedUid=found.id;return found.id;}
   }
-  try {
-    await loadProfile();  // грузим профиль (goalKcal и данные юзера)
-  } catch(e) { console.warn('profile err:', e); }
-  loadToday();            // грузим еду уже с актуальным goalKcal
+  // Последний fallback
+  const users=await getUsers();
+  _resolvedUid=users[0]?.id||1;
+  return _resolvedUid;
+}
+async function getUserData(uid){
+  const users=await getUsers();
+  return users.find(u=>u.id===uid)||null;
+}
+async function getCalorieGoal(uid){
+  const u=await getUserData(uid||await resolveUserId());
+  return u?.calorie_goal||2000;
+}
+async function getUserStreak(){
+  try{const uid=await resolveUserId();const u=await getUserData(uid);return u?.streak_days||0;}
+  catch{return 0;}
 }
 
-init();
+async function loadDiary(){
+  const d=formatDate(dateOffset);
+  $('date-label').textContent=dateLabelStr(d,dateOffset);
+  try{
+    const streakDays=await getUserStreak();
+    $('streak-badge').textContent=`🔥 ${streakDays} дней`;
+  }catch(e){}
+
+  $('diary-loader').style.display='flex';
+  $('meal-list').style.display='none';
+  try{
+    const uid=await resolveUserId();
+    const meals=await api(`meals-by-date?user_id=${uid}&date=${dateStr(d)}`);
+
+    let totalKcal=0,totalP=0,totalF=0,totalC=0;
+    meals.forEach(m=>{totalKcal+=m.calories_kcal||0;totalP+=m.protein_g||0;totalF+=m.fat_g||0;totalC+=m.carbs_g||0;});
+
+    const goal=await getCalorieGoal(uid);
+    const pct=goal>0?Math.min(totalKcal/goal,1):0;
+    $('ring-fill').style.strokeDashoffset=345-345*pct;
+    $('ring-kcal').textContent=Math.round(totalKcal);
+    $('ring-label').textContent=`из ${goal}`;
+    $('m-protein').textContent=Math.round(totalP);
+    $('m-fat').textContent=Math.round(totalF);
+    $('m-carbs').textContent=Math.round(totalC);
+    $('bar-protein').style.width=Math.min(totalP/100*100,100)+'%';
+    $('bar-fat').style.width=Math.min(totalF/70*100,100)+'%';
+    $('bar-carbs').style.width=Math.min(totalC/250*100,100)+'%';
+
+    const ml=$('meal-list');
+    ml.innerHTML=meals.length===0
+      ?'<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Нет приёмов пищи за этот день 🍽</div>'
+      :meals.map(m=>`
+        <div class="meal-card glass-card">
+          <div class="meal-icon">${mealIcon(m.dish_name)}</div>
+          <div class="meal-info">
+            <div class="meal-name">${m.dish_name}</div>
+            <div class="meal-time">${mealTimeLabel(m.eaten_at)}</div>
+            <div class="meal-macros">
+              <span class="macro-tag tag-p">Б ${Math.round(m.protein_g)}г</span>
+              <span class="macro-tag tag-f">Ж ${Math.round(m.fat_g)}г</span>
+              <span class="macro-tag tag-c">У ${Math.round(m.carbs_g)}г</span>
+            </div>
+          </div>
+          <div class="meal-kcal">${Math.round(m.calories_kcal)}<br><span style="font-size:11px;color:var(--muted);font-weight:700">ккал</span></div>
+        </div>`).join('');
+
+    $('diary-loader').style.display='none';
+    ml.style.display='flex';
+
+    const user=await getUserData(uid);
+    if(user){
+      const lv=getLevel(user.xp||0);
+      $('xp-emoji').textContent=lv.emoji;
+      $('xp-level-name').textContent=`${lv.emoji} ${lv.name} · Ур. ${user.level||1}`;
+      const pctXP=lv.nextXp?Math.min((user.xp-lv.minXp)/(lv.nextXp-lv.minXp),1)*100:100;
+      $('xp-bar').style.width=pctXP+'%';
+      $('xp-pts').textContent=`${user.xp} / ${lv.nextXp||'MAX'} XP`;
+      $('xp-card').style.display='flex';
+    }
+  }catch(e){
+    $('diary-loader').innerHTML=`<div class="error-msg">Ошибка загрузки данных. Проверьте подключение.</div>`;
+  }
+
+  try{
+    const act=await api('activity');
+    const wb=$('weekly-bars');
+    const today=new Date();
+    const maxCnt=Math.max(...act.map(a=>a.count),1);
+    const days7=[];
+    for(let i=6;i>=0;i--){const d2=new Date(today);d2.setDate(today.getDate()-i);days7.push(d2);}
+    wb.innerHTML=days7.map((d2,i)=>{
+      const ds=dateStr(d2);
+      const row=act.find(a=>a.day===ds);
+      const cnt=row?row.count:0;
+      const h=Math.max(cnt/maxCnt*100,4);
+      const isT=i===6;
+      return `<div class="day-col">
+        <div class="day-bar-wrap"><div class="day-bar${isT?' today':''}" style="height:${h}%"></div></div>
+        <div class="day-label${isT?' today':''}">${DAYS_SHORT[d2.getDay()]}</div>
+      </div>`;
+    }).join('');
+    $('weekly-card').style.display='block';
+  }catch(e){}
+}
+
+/* ── ANALYTICS ── */
+async function loadAnalytics(){
+  try{
+    const [kbju,an]=await Promise.all([api('kbju-avg'),api('analytics')]);
+    const maxMacro=Math.max(kbju.protein_g,kbju.fat_g,kbju.carbs_g,1);
+    function setDonut(id,valId,val,max){
+      const off=188-Math.min(val/max,1)*188;
+      document.getElementById(id).style.strokeDashoffset=off;
+      document.getElementById(valId).textContent=Math.round(val);
+    }
+    setDonut('d-protein','dv-protein',kbju.protein_g,maxMacro);
+    setDonut('d-fat','dv-fat',kbju.fat_g,maxMacro);
+    setDonut('d-carbs','dv-carbs',kbju.carbs_g,maxMacro);
+
+    const days=an.days;
+    if(days.length>1){
+      const W=Math.max(document.querySelector('.line-chart-wrap').clientWidth||300,300);
+      const H=120,PAD=16;
+      const maxK=Math.max(...days.map(d=>d.avg_kcal),1);
+      const xStep=(W-PAD*2)/(days.length-1);
+      const yOf=d=>PAD+(1-d.avg_kcal/maxK)*(H-PAD*2);
+      const pts=days.map((d,i)=>`${PAD+i*xStep},${yOf(d)}`).join(' ');
+      const area=`M${PAD},${H} `+days.map((d,i)=>`L${PAD+i*xStep},${yOf(d)}`).join(' ')+` L${PAD+(days.length-1)*xStep},${H} Z`;
+      const svg=$('line-chart');
+      svg.setAttribute('width',W);
+      svg.innerHTML=`
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#29b6f6" stop-opacity=".35"/>
+          <stop offset="100%" stop-color="#29b6f6" stop-opacity="0"/>
+        </linearGradient></defs>
+        <path d="${area}" fill="url(#lg)"/>
+        <polyline points="${pts}" fill="none" stroke="#0288d1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        ${days.map((d,i)=>`<circle cx="${PAD+i*xStep}" cy="${yOf(d)}" r="4" fill="#0288d1"/>`).join('')}
+        ${days.map((d,i)=>{
+          if(i%3!==0) return '';
+          return `<text x="${PAD+i*xStep}" y="${yOf(d)-8}" text-anchor="middle" font-size="9" fill="#6b8fa8" font-family="Nunito" font-weight="700">${d.avg_kcal}</text>`;
+        }).join('')}`;
+    }
+
+    const maxCnt=Math.max(...an.top_dishes.map(d=>d.cnt),1);
+    const MEDALS=['🥇','🥈','🥉'];
+    $('top-dishes').innerHTML=an.top_dishes.map((d,i)=>`
+      <div class="dish-row">
+        <div class="dish-rank">${MEDALS[i]||`${i+1}`}</div>
+        <div class="dish-name-txt">${d.dish_name}</div>
+        <div class="dish-bar-wrap"><div class="dish-bar-fill" style="width:${d.cnt/maxCnt*100}%"></div></div>
+        <div class="dish-cnt">${d.cnt}×</div>
+      </div>`).join('');
+
+    $('analytics-loader').style.display='none';
+    $('analytics-content').style.display='flex';
+  }catch(e){
+    $('analytics-loader').innerHTML=`<div class="error-msg">Ошибка загрузки аналитики.</div>`;
+  }
+}
+
+/* ── LEADERBOARD ── */
+async function loadLeaderboard(){
+  try{
+    const rows=await api('leaderboard');
+    const MEDALS=['🥇','🥈','🥉'];
+    $('lb-list').innerHTML=rows.map((u,i)=>{
+      const lv=getLevel(u.xp||0);
+      return `<div class="lb-card glass-card">
+        <div class="lb-rank">${MEDALS[i]||`${i+1}`}</div>
+        <div class="lb-info">
+          <div class="lb-username">${displayName(u)}</div>
+          <div class="lb-meta">🔥 ${u.streak_days} дней · 🏅 ${u.ach_count} ачивок</div>
+          <span class="lb-level-badge">${lv.emoji} ${lv.name}</span>
+        </div>
+        <div class="lb-right">
+          <div class="lb-xp">${u.xp}</div>
+          <div class="lb-xp-label">XP</div>
+        </div>
+      </div>`;
+    }).join('');
+    $('lb-loader').style.display='none';
+    $('lb-list').style.display='flex';
+  }catch(e){
+    $('lb-loader').innerHTML=`<div class="error-msg">Ошибка загрузки рейтинга.</div>`;
+  }
+}
+
+/* ── PROFILE ── */
+async function loadProfile(){
+  try{
+    const uid=await resolveUserId();
+    const u=await getUserData(uid);
+    if(!u) throw new Error('no user');
+
+    const lv=getLevel(u.xp||0);
+    const pctXP=lv.nextXp?Math.min((u.xp-lv.minXp)/(lv.nextXp-lv.minXp),1)*100:100;
+
+    $('p-avatar').textContent=lv.emoji;
+    // в профиле — себе показываем полное имя/username
+    $('p-name').textContent=u.first_name||`@${u.username}`;
+    $('p-level').textContent=`${lv.emoji} ${lv.name} · Уровень ${u.level||1}`;
+    $('p-xp-bar').style.width=pctXP+'%';
+    $('p-xp-txt').textContent=`${u.xp} / ${lv.nextXp||'MAX'} XP`;
+
+    const stats=[
+      ['🍽',u.meal_count,'Приёмов пищи'],
+      ['🔥',u.streak_days,'Дней стрика'],
+      ['⚡',Math.round(u.kcal_today),'Ккал сегодня'],
+      ['📊',Math.round(u.kcal_total),'Ккал всего'],
+    ];
+    $('stats-grid').innerHTML=stats.map(([ic,val,lbl])=>`
+      <div class="stat-item glass-card">
+        <div style="font-size:28px">${ic}</div>
+        <div class="stat-val">${val??'—'}</div>
+        <div class="stat-label">${lbl}</div>
+      </div>`).join('');
+
+    const GOAL_LABELS={lose_weight:'Похудение',gain_weight:'Набор массы',maintain:'Поддержание'};
+    const ACT_LABELS={low:'Низкая',medium:'Средняя',high:'Высокая'};
+    const goals=[
+      ['Пол',u.gender==='male'?'Мужской':'Женский'],
+      ['Возраст',u.age?`${u.age} лет`:'—'],
+      ['Рост',u.height_cm?`${u.height_cm} см`:'—'],
+      ['Вес',u.weight_kg?`${u.weight_kg} кг`:'—'],
+      ['Цель',GOAL_LABELS[u.goal]||u.goal||'—'],
+      ['Активность',ACT_LABELS[u.activity]||u.activity||'—'],
+      ['Норма калорий',u.calorie_goal?`${u.calorie_goal} ккал`:'—'],
+    ];
+    $('goals-rows').innerHTML=goals.map(([k,v])=>`
+      <div class="goal-row">
+        <div class="goal-key">${k}</div>
+        <div class="goal-val">${v}</div>
+      </div>`).join('');
+
+    const achData=await api('achievements');
+    const earned=new Set(achData.map(a=>a.code));
+    $('ach-grid').innerHTML=Object.entries(ACHIEVEMENTS).map(([code,[ico,name,desc]])=>`
+      <div class="ach-item glass-card${earned.has(code)?'':' locked'}">
+        <div class="ach-icon">${ico}</div>
+        <div class="ach-info">
+          <div class="ach-name">${name}</div>
+          <div class="ach-desc">${desc}</div>
+        </div>
+      </div>`).join('');
+
+    $('profile-loader').style.display='none';
+    $('profile-content').style.display='flex';
+  }catch(e){
+    $('profile-loader').innerHTML=`<div class="error-msg">Ошибка загрузки профиля.</div>`;
+  }
+}
+
+/* ── INIT ── */
+if(window.Telegram?.WebApp){Telegram.WebApp.ready();Telegram.WebApp.expand();}
+loadDiary();
 </script>
 </body>
 </html>
