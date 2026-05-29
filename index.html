@@ -40,7 +40,7 @@
     .bottom-nav-wrap{
       position:fixed;bottom:0;left:0;right:0;
       display:flex;justify-content:center;
-      padding:12px 20px calc(env(safe-area-inset-bottom,16px) + 10px);
+      padding:12px 20px calc(env(safe-area-inset-bottom,16px) + 22px);
       z-index:100;pointer-events:none;
     }
     .bottom-nav{
@@ -74,7 +74,8 @@
       position:relative;z-index:1;
       -webkit-tap-highlight-color:transparent;min-width:72px;
     }
-    .nav-icon{font-size:22px;line-height:1;transition:filter .2s;filter:grayscale(1) brightness(.6);}
+    .nav-icon{font-size:22px;line-height:1;transition:filter .25s,transform .2s cubic-bezier(.34,1.4,.64,1),font-size .18s;filter:grayscale(1) brightness(.6);}
+    .nav-item.drag-hover .nav-icon{font-size:28px;filter:grayscale(0) brightness(1) drop-shadow(0 2px 8px rgba(41,182,246,.6));transform:scale(1.18);}
     .nav-label{font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:.01em;transition:color .2s;}
     .nav-item.active .nav-icon{filter:grayscale(0) brightness(1) drop-shadow(0 2px 6px rgba(41,182,246,.5));}
     .nav-item.active .nav-label{color:#29b6f6;}
@@ -543,10 +544,17 @@ window.addEventListener('pointermove',e=>{
   const newX=Math.max(navTabX[0],Math.min(navTabX[navTabX.length-1],navDragStartOff+dx));
   indEl.style.transition='transform 0s';
   indEl.style.transform=`translateX(${newX}px)`;
+  // подсвечиваем ближайший таб под пальцем
+  const items=navItems();
+  let hoverIdx=navCurIdx,minD=Infinity;
+  navTabX.forEach((x,i)=>{const d=Math.abs(x-newX);if(d<minD){minD=d;hoverIdx=i;}});
+  items.forEach((el,i)=>el.classList.toggle('drag-hover',i===hoverIdx));
 });
 window.addEventListener('pointerup',e=>{
   if(!navDragging)return;
   navDragging=false;
+  // убираем drag-hover со всех
+  navItems().forEach(el=>el.classList.remove('drag-hover'));
   if(!navDragMoved)return;
   const curX=navDragStartOff+(e.clientX-navDragStartX);
   let closest=navCurIdx,minDist=Infinity;
