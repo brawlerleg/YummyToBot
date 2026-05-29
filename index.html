@@ -147,27 +147,19 @@
     .dish-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-dark),var(--blue));border-radius:10px;}
 
 
-    /* LEADERBOARD SWITCHER */
-    .lb-switcher{
-      display:flex;gap:8px;padding:0 14px 14px;
-    }
-    .lb-switch-btn{
-      flex:1;padding:10px 6px;border:none;border-radius:14px;
-      font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;
-      cursor:pointer;transition:all .2s;
-      background:rgba(255,255,255,0.22);
-      backdrop-filter:blur(10px);
-      color:rgba(255,255,255,0.7);
-      border:1.5px solid rgba(255,255,255,0.3);
-    }
-    .lb-switch-btn.active{
-      background:rgba(255,255,255,0.92);
-      color:var(--blue-dark);
-      border-color:transparent;
-      box-shadow:0 4px 16px rgba(2,136,209,0.25);
-      transform:translateY(-1px);
-    }
-    .lb-switch-btn .lb-btn-icon{font-size:18px;display:block;margin-bottom:2px;}
+    /* SWITCHER */
+    .sw{position:relative;background:rgba(0,0,0,.12);border-radius:99px;padding:4px;display:inline-flex;box-shadow:inset 0 1px 4px rgba(0,0,0,.15),inset 0 -1px 0 rgba(255,255,255,.08);}
+    .sw-thumb{position:absolute;top:4px;left:4px;bottom:4px;border-radius:99px;transition:transform .32s cubic-bezier(.34,1.25,.64,1);background:rgba(255,255,255,.28);backdrop-filter:blur(18px) saturate(200%);-webkit-backdrop-filter:blur(18px) saturate(200%);border:1px solid rgba(255,255,255,.55);box-shadow:0 2px 12px rgba(2,136,209,.22),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(2,136,209,.1);}
+    .sw-thumb::before{content:'';position:absolute;top:0;left:10%;right:10%;height:40%;background:linear-gradient(180deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 100%);border-radius:99px 99px 60% 60%;pointer-events:none;}
+    .sw-item{width:48px;height:44px;border:none;background:transparent;font-size:24px;cursor:pointer;border-radius:99px;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;transition:transform .15s,filter .25s,opacity .25s;filter:brightness(.6) saturate(.5);opacity:.75;outline:none;-webkit-tap-highlight-color:transparent;}
+    .sw-item.active{filter:brightness(1) saturate(1);opacity:1;}
+    .sw-item:active{transform:scale(.82);}
+    .lb-wrap{padding:0 14px;}
+    .lb-section-title{font-size:13px;font-weight:800;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;margin-top:2px;}
+    .lb-slides-outer{overflow:hidden;}
+    .lb-slides{display:flex;transition:transform .38s cubic-bezier(.4,0,.2,1);}
+    .lb-slide{min-width:100%;display:flex;flex-direction:column;gap:10px;}
+
     /* LEADERBOARD */
     .lb-list{padding:0 14px;display:flex;flex-direction:column;gap:10px;}
     .lb-card{border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;}
@@ -352,23 +344,25 @@
           <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
           <div class="logo-text">YummyTo<span>Рейтинг</span></div>
         </div>
+        <div class="sw" id="lb-sw">
+          <div class="sw-thumb" id="lb-thumb"></div>
+          <button class="sw-item active" onclick="lbSel(0)">⚡️</button>
+          <button class="sw-item" onclick="lbSel(1)">🍔</button>
+          <button class="sw-item" onclick="lbSel(2)">🥗</button>
+        </div>
       </div>
-      <div class="page-title">🏆 Лидерборд</div>
-    </div>
-    <!-- Переключатель -->
-    <div class="lb-switcher">
-      <button class="lb-switch-btn active" id="lb-btn-xp" onclick="switchLb('xp')">
-        <span class="lb-btn-icon">⚡️</span>Топ XP
-      </button>
-      <button class="lb-switch-btn" id="lb-btn-fat" onclick="switchLb('fat')">
-        <span class="lb-btn-icon">🍔</span>Жирдяи
-      </button>
-      <button class="lb-switch-btn" id="lb-btn-thin" onclick="switchLb('thin')">
-        <span class="lb-btn-icon">🥗</span>Анорексички
-      </button>
     </div>
     <div id="lb-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
-    <div class="lb-list" id="lb-list" style="display:none"></div>
+    <div class="lb-wrap" id="lb-wrap" style="display:none">
+      <div class="lb-section-title" id="lb-title">⚡️ Топ XP</div>
+      <div class="lb-slides-outer">
+        <div class="lb-slides" id="lb-slides">
+          <div class="lb-slide lb-list" id="lb-list-xp"></div>
+          <div class="lb-slide lb-list" id="lb-list-fat"></div>
+          <div class="lb-slide lb-list" id="lb-list-thin"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- PROFILE -->
@@ -699,25 +693,27 @@ async function loadAnalytics(){
 }
 
 /* ── LEADERBOARD ── */
-let _lbMode = 'xp';
-let _lbCache = {};
+let _lbIdx = 0;
+const LB_TITLES = ['⚡️ Топ XP', '🍔 Топ жирдяев за сегодня', '🥗 Топ анорексичек за сегодня'];
 
-function switchLb(mode){
-  _lbMode = mode;
-  ['xp','fat','thin'].forEach(m => {
-    $('lb-btn-'+m).classList.toggle('active', m===mode);
-  });
-  renderLb();
+function lbSel(idx){
+  _lbIdx = idx;
+  const items = document.querySelectorAll('#lb-sw .sw-item');
+  const thumb = $('lb-thumb');
+  const w = items[0].offsetWidth;
+  items.forEach((b,i)=>b.classList.toggle('active',i===idx));
+  thumb.style.transform = `translateX(${idx*w}px)`;
+  $('lb-slides').style.transform = `translateX(${-idx*100}%)`;
+  $('lb-title').textContent = LB_TITLES[idx];
 }
 
-function renderLb(){
-  const MEDALS=['🥇','🥈','🥉'];
-  const list = $('lb-list');
+async function loadLeaderboard(){
+  try{
+    const [xpRows, allUsers] = await Promise.all([api('leaderboard'), api('users')]);
+    const MEDALS=['🥇','🥈','🥉'];
 
-  if(_lbMode === 'xp'){
-    const rows = _lbCache.xp || [];
-    if(!rows.length){ list.innerHTML='<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Нет данных 🤷</div>'; return; }
-    list.innerHTML = rows.map((u,i)=>{
+    // XP топ
+    $('lb-list-xp').innerHTML = xpRows.map((u,i)=>{
       const lv=getLevel(u.xp||0);
       return `<div class="lb-card glass-card">
         <div class="lb-rank">${MEDALS[i]||i+1}</div>
@@ -732,56 +728,47 @@ function renderLb(){
         </div>
       </div>`;
     }).join('');
-  }
 
-  if(_lbMode === 'fat'){
-    const rows = _lbCache.kcal || [];
-    if(!rows.length){ list.innerHTML='<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>'; return; }
-    const sorted = [...rows].filter(u=>u.kcal_today>0).sort((a,b)=>b.kcal_today-a.kcal_today).slice(0,10);
-    list.innerHTML = sorted.map((u,i)=>`
+    // Жирдяи — топ по kcal_today убыв
+    const fat = [...allUsers].filter(u=>u.kcal_today>0).sort((a,b)=>b.kcal_today-a.kcal_today).slice(0,10);
+    $('lb-list-fat').innerHTML = fat.length ? fat.map((u,i)=>`
       <div class="lb-card glass-card">
         <div class="lb-rank">${MEDALS[i]||i+1}</div>
         <div class="lb-info">
           <div class="lb-username">${displayName(u)}</div>
-          <div class="lb-meta">🍔 Сожрал сегодня</div>
+          <div class="lb-meta">🍔 Сегодня</div>
         </div>
         <div class="lb-right">
           <div class="lb-xp" style="color:var(--orange)">${Math.round(u.kcal_today)}</div>
           <div class="lb-xp-label">ккал</div>
         </div>
-      </div>`).join('');
-  }
+      </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
 
-  if(_lbMode === 'thin'){
-    const rows = _lbCache.kcal || [];
-    if(!rows.length){ list.innerHTML='<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>'; return; }
-    const sorted = [...rows].filter(u=>u.kcal_today>0).sort((a,b)=>a.kcal_today-b.kcal_today).slice(0,10);
-    list.innerHTML = sorted.map((u,i)=>`
+    // Анорексички — топ по kcal_today возр
+    const thin = [...allUsers].filter(u=>u.kcal_today>0).sort((a,b)=>a.kcal_today-b.kcal_today).slice(0,10);
+    $('lb-list-thin').innerHTML = thin.length ? thin.map((u,i)=>`
       <div class="lb-card glass-card">
         <div class="lb-rank">${MEDALS[i]||i+1}</div>
         <div class="lb-info">
           <div class="lb-username">${displayName(u)}</div>
-          <div class="lb-meta">🥗 Поклевал сегодня</div>
+          <div class="lb-meta">🥗 Сегодня</div>
         </div>
         <div class="lb-right">
           <div class="lb-xp" style="color:var(--green)">${Math.round(u.kcal_today)}</div>
           <div class="lb-xp-label">ккал</div>
         </div>
-      </div>`).join('');
-  }
-}
+      </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
 
-async function loadLeaderboard(){
-  try{
-    const [xpRows, kcalRows] = await Promise.all([
-      api('leaderboard'),
-      api('users')
-    ]);
-    _lbCache.xp   = xpRows;
-    _lbCache.kcal = kcalRows;
     $('lb-loader').style.display='none';
-    $('lb-list').style.display='flex';
-    renderLb();
+    $('lb-wrap').style.display='block';
+
+    // инициализируем thumb после рендера
+    requestAnimationFrame(()=>{
+      const items = document.querySelectorAll('#lb-sw .sw-item');
+      if(items[0]) $('lb-thumb').style.width = items[0].offsetWidth+'px';
+    });
   }catch(e){
     $('lb-loader').innerHTML=`<div class="error-msg">Ошибка загрузки рейтинга.</div>`;
   }
