@@ -160,6 +160,18 @@
     .lb-slides{display:flex;transition:transform .38s cubic-bezier(.4,0,.2,1);}
     .lb-slide{min-width:100%;display:flex;flex-direction:column;gap:10px;}
 
+
+    .lb-card.lb-me{
+      background:rgba(2,136,209,.18);
+      border:1.5px solid rgba(255,255,255,.7);
+      box-shadow:0 0 0 3px rgba(255,255,255,.15), 0 4px 20px rgba(2,136,209,.2);
+    }
+    .lb-card.lb-me .lb-username::after{
+      content:' 👈 ты';
+      font-size:11px;
+      font-weight:700;
+      opacity:.7;
+    }
     /* LEADERBOARD */
     .lb-list{padding:0 14px;display:flex;flex-direction:column;gap:10px;}
     .lb-card{border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;}
@@ -709,13 +721,17 @@ function lbSel(idx){
 
 async function loadLeaderboard(){
   try{
+    const myUid = await resolveUserId();
+    const tgU   = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    const myUsername = tgU?.username || '';
     const [xpRows, allUsers] = await Promise.all([api('leaderboard'), api('users')]);
     const MEDALS=['🥇','🥈','🥉'];
 
     // XP топ
     $('lb-list-xp').innerHTML = xpRows.map((u,i)=>{
       const lv=getLevel(u.xp||0);
-      return `<div class="lb-card glass-card">
+      const me=String(u.id)===String(myUid)||String(u.username)===String(myUsername);
+      return `<div class="lb-card glass-card${me?' lb-me':''}">
         <div class="lb-rank">${MEDALS[i]||i+1}</div>
         <div class="lb-info">
           <div class="lb-username">${displayName(u)}</div>
@@ -731,8 +747,9 @@ async function loadLeaderboard(){
 
     // Жирдяи — топ по kcal_today убыв
     const fat = [...allUsers].filter(u=>u.kcal_today>0).sort((a,b)=>b.kcal_today-a.kcal_today).slice(0,10);
-    $('lb-list-fat').innerHTML = fat.length ? fat.map((u,i)=>`
-      <div class="lb-card glass-card">
+    $('lb-list-fat').innerHTML = fat.length ? fat.map((u,i)=>{
+      const me=String(u.id)===String(myUid)||String(u.username)===String(myUsername);
+      return `<div class="lb-card glass-card${me?' lb-me':''}">
         <div class="lb-rank">${MEDALS[i]||i+1}</div>
         <div class="lb-info">
           <div class="lb-username">${displayName(u)}</div>
@@ -742,13 +759,14 @@ async function loadLeaderboard(){
           <div class="lb-xp" style="color:var(--orange)">${Math.round(u.kcal_today)}</div>
           <div class="lb-xp-label">ккал</div>
         </div>
-      </div>`).join('')
+      </div>`;}).join('')
     : '<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
 
     // Анорексички — топ по kcal_today возр
     const thin = [...allUsers].filter(u=>u.kcal_today>0).sort((a,b)=>a.kcal_today-b.kcal_today).slice(0,10);
-    $('lb-list-thin').innerHTML = thin.length ? thin.map((u,i)=>`
-      <div class="lb-card glass-card">
+    $('lb-list-thin').innerHTML = thin.length ? thin.map((u,i)=>{
+      const me=String(u.id)===String(myUid)||String(u.username)===String(myUsername);
+      return `<div class="lb-card glass-card${me?' lb-me':''}">
         <div class="lb-rank">${MEDALS[i]||i+1}</div>
         <div class="lb-info">
           <div class="lb-username">${displayName(u)}</div>
@@ -758,7 +776,7 @@ async function loadLeaderboard(){
           <div class="lb-xp" style="color:var(--green)">${Math.round(u.kcal_today)}</div>
           <div class="lb-xp-label">ккал</div>
         </div>
-      </div>`).join('')
+      </div>`;}).join('')
     : '<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
 
     $('lb-loader').style.display='none';
