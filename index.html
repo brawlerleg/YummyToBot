@@ -1,865 +1,244 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-  <title>YummyTo</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
-  <style>
-    :root{
-      --blue:#29b6f6;--blue-dark:#0288d1;--green:#66bb6a;
-      --orange:#ffa726;--yellow:#ffee58;--red:#ef5350;
-      --text:#1a2d3d;--muted:#6b8fa8;--radius:20px;
-    }
-    *{box-sizing:border-box;margin:0;padding:0;}
-    html,body{height:100%;overflow:hidden;}
-    body{
-      font-family:'Nunito',sans-serif;
-      background:linear-gradient(160deg,#0288d1 0%,#29b6f6 40%,#81d4fa 70%,#b3e5fc 100%);
-      background-attachment:fixed;
-      color:var(--text);display:flex;flex-direction:column;
-    }
-    .glass{
-      background:rgba(255,255,255,0.22);
-      backdrop-filter:blur(18px) saturate(160%);
-      -webkit-backdrop-filter:blur(18px) saturate(160%);
-      border:1px solid rgba(255,255,255,0.45);
-      box-shadow:0 8px 32px rgba(2,136,209,0.18),inset 0 1px 0 rgba(255,255,255,0.6);
-    }
-    .glass-card{
-      background:rgba(255,255,255,0.82);
-      backdrop-filter:blur(20px) saturate(180%);
-      -webkit-backdrop-filter:blur(20px) saturate(180%);
-      border:1px solid rgba(255,255,255,0.9);
-      box-shadow:0 4px 24px rgba(2,136,209,0.13),inset 0 1px 0 rgba(255,255,255,0.8);
-    }
-    #app{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-    .page{display:none;flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:90px;}
-    .page.active{display:block;}
-    .bottom-nav{
-      position:fixed;bottom:0;left:0;right:0;
-      background:rgba(255,255,255,0.88);
-      backdrop-filter:blur(24px) saturate(200%);
-      -webkit-backdrop-filter:blur(24px) saturate(200%);
-      border-top:1px solid rgba(255,255,255,0.9);
-      box-shadow:0 -4px 30px rgba(2,136,209,0.15);
-      border-radius:24px 24px 0 0;
-      padding:10px 0 env(safe-area-inset-bottom,10px);
-      display:flex;justify-content:space-around;z-index:100;
-    }
-    .nav-item{
-      display:flex;flex-direction:column;align-items:center;gap:3px;
-      font-size:11px;font-weight:700;color:var(--muted);
-      cursor:pointer;padding:4px 14px;border-radius:14px;transition:color .15s;
-    }
-    .nav-item.active{color:var(--blue-dark);}
-    .nav-icon{font-size:24px;}
-    .nav-item.active .nav-icon{filter:drop-shadow(0 2px 6px rgba(2,136,209,.4));}
-    .page-header{padding:20px 20px 28px;position:relative;overflow:hidden;}
-    .page-header::before{content:'';position:absolute;top:-40px;right:-30px;width:180px;height:180px;background:rgba(255,255,255,.1);border-radius:50%;pointer-events:none;}
-    .page-header::after{content:'';position:absolute;bottom:10px;left:-50px;width:140px;height:140px;background:rgba(255,255,255,.07);border-radius:50%;pointer-events:none;}
-    .header-top{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;}
-    .logo-wrap{display:flex;align-items:center;gap:10px;}
-    .logo-text{color:#fff;font-weight:900;font-size:20px;line-height:1;letter-spacing:-.3px;text-shadow:0 2px 8px rgba(0,0,0,.15);}
-    .logo-text span{font-weight:600;opacity:.85;font-size:13px;display:block;}
-    .header-badge{border-radius:30px;padding:7px 15px;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;gap:5px;text-shadow:0 1px 4px rgba(0,0,0,.1);}
-    .page-title{color:#fff;font-weight:900;font-size:22px;margin-top:16px;position:relative;z-index:1;text-shadow:0 2px 8px rgba(0,0,0,.15);}
-    .loader{display:flex;align-items:center;justify-content:center;padding:40px 20px;color:rgba(255,255,255,.7);font-weight:700;font-size:15px;gap:10px;}
-    .spinner{width:22px;height:22px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
-    @keyframes spin{to{transform:rotate(360deg);}}
-    .error-msg{margin:12px 14px;padding:14px 16px;border-radius:var(--radius);background:rgba(239,83,80,.15);border:1px solid rgba(239,83,80,.3);color:#b71c1c;font-weight:700;font-size:13px;}
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import asyncpg
+from datetime import date
+from datetime import date as date_type  # добавь в импорты
 
-    /* DIARY */
-    .diary-header-inner{margin-top:18px;position:relative;z-index:1;}
-    .calorie-block{display:flex;align-items:center;justify-content:center;gap:24px;}
-    .ring-wrap{position:relative;width:130px;height:130px;flex-shrink:0;}
-    .ring-wrap svg{transform:rotate(-90deg);}
-    .ring-bg{fill:none;stroke:rgba(255,255,255,.25);stroke-width:10;}
-    .ring-fill{fill:none;stroke:#fff;stroke-width:10;stroke-linecap:round;stroke-dasharray:345;stroke-dashoffset:345;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 0 8px rgba(255,255,255,.7));}
-    .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;}
-    .ring-kcal{font-size:26px;font-weight:900;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.15);}
-    .ring-label{font-size:14px;font-weight:700;opacity:.85;}
-    .macro-mini{display:flex;flex-direction:column;gap:10px;}
-    .macro-mini-item{display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.12);}
-    .macro-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-    .macro-mini-bar{width:76px;height:5px;background:rgba(255,255,255,.25);border-radius:10px;overflow:hidden;}
-    .macro-mini-bar-fill{height:100%;border-radius:10px;}
-    .date-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 10px;}
-    .date-nav button{border:none;border-radius:13px;width:38px;height:38px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue-dark);font-weight:900;transition:transform .1s;}
-    .date-nav button:active{transform:scale(.92);}
-    .date-today{font-weight:800;font-size:16px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.2);}
-    .xp-card{margin:0 14px 10px;border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:14px;}
-    .xp-emoji{font-size:32px;}
-    .xp-info{flex:1;}
-    .xp-level-name{font-weight:900;font-size:15px;color:var(--blue-dark);}
-    .xp-bar-wrap{background:rgba(2,136,209,.12);border-radius:8px;height:7px;margin-top:6px;overflow:hidden;}
-    .xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-dark),var(--blue));border-radius:8px;transition:width .8s ease;}
-    .xp-pts{font-size:12px;color:var(--muted);font-weight:700;margin-top:3px;}
-    .section-title{padding:6px 20px 10px;font-size:13px;font-weight:800;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.8px;}
-    .meal-list{padding:0 14px;display:flex;flex-direction:column;gap:10px;}
-    .meal-card{border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .12s;}
-    .meal-card:active{transform:scale(.97);}
-    .meal-icon{font-size:34px;line-height:1;flex-shrink:0;}
-    .meal-info{flex:1;min-width:0;}
-    .meal-name{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
-    .meal-time{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px;}
-    .meal-macros{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
-    .macro-tag{font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px;}
-    .tag-p{background:rgba(102,187,106,.15);color:#2e7d32;}
-    .tag-f{background:rgba(255,167,38,.15);color:#e65100;}
-    .tag-c{background:rgba(41,182,246,.15);color:#0277bd;}
-    .meal-kcal{font-size:16px;font-weight:900;color:var(--blue-dark);flex-shrink:0;text-align:right;}
-    .add-btn{margin:16px 14px 0;background:linear-gradient(135deg,#0277bd,#29b6f6);color:#fff;border:none;border-radius:var(--radius);width:calc(100% - 28px);padding:16px;font-size:16px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;box-shadow:0 6px 24px rgba(2,136,209,.45),inset 0 1px 0 rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s;}
-    .add-btn:active{transform:scale(.97);}
-    .weekly-card{margin:14px 14px 0;border-radius:var(--radius);padding:16px 18px;}
-    .weekly-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;}
-    .weekly-bars{display:flex;align-items:flex-end;gap:6px;height:50px;}
-    .day-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
-    .day-bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end;height:40px;}
-    .day-bar{width:100%;border-radius:6px 6px 0 0;background:var(--blue);opacity:.4;transition:opacity .2s;}
-    .day-bar.today{opacity:1;box-shadow:0 0 10px rgba(41,182,246,.5);}
-    .day-label{font-size:10px;font-weight:700;color:var(--muted);}
-    .day-label.today{color:var(--blue-dark);}
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://brawlerleg.github.io"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    /* ANALYTICS */
-    .analytics-grid{padding:0 14px;display:flex;flex-direction:column;gap:12px;}
-    .an-card{border-radius:var(--radius);padding:16px 18px;}
-    .an-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px;}
-    .kbju-row{display:flex;justify-content:space-around;align-items:center;}
-    .kbju-item{display:flex;flex-direction:column;align-items:center;gap:6px;}
-    .donut-wrap{position:relative;width:72px;height:72px;}
-    .donut-wrap svg{transform:rotate(-90deg);}
-    .donut-bg{fill:none;stroke-width:8;}
-    .donut-fill{fill:none;stroke-width:8;stroke-linecap:round;stroke-dasharray:188;stroke-dashoffset:188;transition:stroke-dashoffset 1s ease;}
-    .donut-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-    .donut-val{font-size:15px;font-weight:900;line-height:1;}
-    .donut-unit{font-size:9px;font-weight:700;color:var(--muted);}
-    .kbju-name{font-size:12px;font-weight:800;}
-    .line-chart-wrap{width:100%;overflow-x:auto;}
-    .line-chart-svg{display:block;}
-    .dish-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(2,136,209,.07);}
-    .dish-row:last-child{border-bottom:none;}
-    .dish-rank{font-size:18px;width:28px;text-align:center;flex-shrink:0;}
-    .dish-name-txt{flex:1;font-weight:700;font-size:14px;color:var(--text);}
-    .dish-cnt{font-size:13px;font-weight:800;color:var(--blue-dark);}
-    .dish-bar-wrap{width:60px;height:6px;background:rgba(2,136,209,.1);border-radius:10px;overflow:hidden;}
-    .dish-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-dark),var(--blue));border-radius:10px;}
+DATABASE_URL = "postgresql://postgres:Tiktok2010@localhost:5432/meals_db"
+
+async def get_db():
+    return await asyncpg.connect(DATABASE_URL)
 
 
-    /* SWITCHER */
-    .sw{position:relative;background:rgba(0,0,0,.12);border-radius:99px;padding:4px;display:inline-flex;box-shadow:inset 0 1px 4px rgba(0,0,0,.15),inset 0 -1px 0 rgba(255,255,255,.08);}
-    .sw-thumb{position:absolute;top:4px;left:4px;bottom:4px;border-radius:99px;transition:transform .32s cubic-bezier(.34,1.25,.64,1);background:rgba(255,255,255,.28);backdrop-filter:blur(18px) saturate(200%);-webkit-backdrop-filter:blur(18px) saturate(200%);border:1px solid rgba(255,255,255,.55);box-shadow:0 2px 12px rgba(2,136,209,.22),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(2,136,209,.1);}
-    .sw-thumb::before{content:'';position:absolute;top:0;left:10%;right:10%;height:40%;background:linear-gradient(180deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 100%);border-radius:99px 99px 60% 60%;pointer-events:none;}
-    .sw-item{width:48px;height:44px;border:none;background:transparent;font-size:24px;cursor:pointer;border-radius:99px;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;transition:transform .15s,filter .25s,opacity .25s;filter:brightness(.6) saturate(.5);opacity:.75;outline:none;-webkit-tap-highlight-color:transparent;}
-    .sw-item.active{filter:brightness(1) saturate(1);opacity:1;}
-    .sw-item:active{transform:scale(.82);}
-    .lb-wrap{padding:0 14px;}
-    .lb-section-title{font-size:13px;font-weight:800;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;margin-top:2px;}
-    .lb-slides-outer{overflow:hidden;}
-    .lb-slides{display:flex;transition:transform .38s cubic-bezier(.4,0,.2,1);}
-    .lb-slide{min-width:100%;display:flex;flex-direction:column;gap:10px;}
+@app.get("/stats")
+async def stats():
+    db = await get_db()
+    try:
+        users        = await db.fetchval("SELECT COUNT(*) FROM users")
+        meals_today  = await db.fetchval("SELECT COUNT(*) FROM meals WHERE DATE(eaten_at) = CURRENT_DATE")
+        avg_kcal     = await db.fetchval("SELECT AVG(calories_kcal) FROM meals WHERE DATE(eaten_at) = CURRENT_DATE")
+        total        = await db.fetchval("SELECT COUNT(*) FROM meals")
+        new_week     = await db.fetchval("SELECT COUNT(*) FROM users WHERE created_at >= NOW() - INTERVAL '7 days'")
+        active_today = await db.fetchval("SELECT COUNT(DISTINCT user_id) FROM meals WHERE DATE(eaten_at) = CURRENT_DATE")
+        onboarded    = await db.fetchval("SELECT COUNT(*) FROM users WHERE onboarding_done = TRUE")
+        return {
+            "users": users,
+            "onboarded": onboarded,
+            "meals_today": meals_today,
+            "avg_kcal": round(avg_kcal or 0),
+            "total": total,
+            "new_week": new_week,
+            "active_today": active_today,
+        }
+    finally:
+        await db.close()
 
 
-    .lb-card.lb-me{
-      background:#fff;
-      border:2px solid #29b6f6;
-      box-shadow:0 0 0 4px rgba(41,182,246,.18), 0 6px 20px rgba(2,136,209,.2);
-    }
-    .lb-card.lb-me .lb-username{color:#0277bd;}
-    .lb-card.lb-me .lb-xp{color:#0277bd !important;}
-    .lb-you-badge{
-      font-size:10px;font-weight:900;
-      background:linear-gradient(135deg,#0288d1,#29b6f6);
-      color:#fff;
-      padding:2px 9px;border-radius:99px;
-      box-shadow:0 2px 6px rgba(2,136,209,.35);
-      margin-left:6px;vertical-align:middle;
-      display:inline-block;flex-shrink:0;
-    }
-    /* LEADERBOARD */
-    .lb-list{padding:0 14px;display:flex;flex-direction:column;gap:10px;}
-    .lb-card{border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;}
-    .lb-rank{font-size:22px;width:36px;text-align:center;flex-shrink:0;}
-    .lb-info{flex:1;min-width:0;}
-    .lb-username{font-weight:800;font-size:15px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .lb-meta{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px;}
-    .lb-right{text-align:right;flex-shrink:0;}
-    .lb-xp{font-size:17px;font-weight:900;color:var(--blue-dark);}
-    .lb-xp-label{font-size:10px;font-weight:700;color:var(--muted);}
-    .lb-level-badge{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:800;background:rgba(2,136,209,.12);color:var(--blue-dark);}
+@app.get("/activity")
+async def activity():
+    db = await get_db()
+    try:
+        rows = await db.fetch("""
+            SELECT DATE(eaten_at) as day, COUNT(*) as count
+            FROM meals
+            WHERE eaten_at >= NOW() - INTERVAL '7 days'
+            GROUP BY DATE(eaten_at)
+            ORDER BY day
+        """)
+        return [{"day": str(r["day"]), "count": r["count"]} for r in rows]
+    finally:
+        await db.close()
 
-    /* PROFILE */
-    .profile-content{padding:0 14px;display:flex;flex-direction:column;gap:12px;}
-    .profile-hero{border-radius:var(--radius);padding:20px;text-align:center;}
-    .profile-avatar{font-size:56px;line-height:1;margin-bottom:10px;}
-    .profile-name{font-weight:900;font-size:20px;color:var(--text);}
-    .profile-level{font-size:14px;font-weight:700;color:var(--blue-dark);margin-top:4px;}
-    .profile-xp-bar-wrap{background:rgba(2,136,209,.12);border-radius:10px;height:8px;margin:12px 0 4px;overflow:hidden;}
-    .profile-xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue-dark),var(--blue));border-radius:10px;transition:width .8s ease;}
-    .profile-xp-txt{font-size:12px;font-weight:700;color:var(--muted);}
-    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-    .stat-item{border-radius:16px;padding:14px;text-align:center;}
-    .stat-val{font-size:22px;font-weight:900;color:var(--blue-dark);}
-    .stat-label{font-size:11px;font-weight:700;color:var(--muted);margin-top:2px;}
-    .goals-card{border-radius:var(--radius);padding:16px 18px;}
-    .goals-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;}
-    .goal-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(2,136,209,.07);}
-    .goal-row:last-child{border-bottom:none;}
-    .goal-key{font-size:13px;font-weight:700;color:var(--muted);}
-    .goal-val{font-size:14px;font-weight:800;color:var(--text);}
-    .ach-grid{display:flex;flex-wrap:wrap;gap:10px;}
-    .ach-item{border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:8px;flex:1;min-width:140px;}
-    .ach-icon{font-size:24px;}
-    .ach-info{flex:1;min-width:0;}
-    .ach-name{font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .ach-desc{font-size:11px;font-weight:600;color:var(--muted);margin-top:1px;}
-    .ach-item.locked{opacity:.45;filter:grayscale(1);}
-  </style>
-</head>
-<body>
-<div id="app">
 
-  <!-- DIARY -->
-  <div class="page active" id="page-diary">
-    <div class="page-header">
-      <div class="header-top">
-        <div class="logo-wrap">
-          <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
-          <div class="logo-text">YummyTo<span>Дневник питания</span></div>
-        </div>
-        <div class="header-badge glass" id="streak-badge">🔥 — дней</div>
-      </div>
-      <div class="diary-header-inner">
-        <div class="calorie-block">
-          <div class="ring-wrap">
-            <svg viewBox="0 0 120 120" width="130" height="130">
-              <circle class="ring-bg" cx="60" cy="60" r="55"/>
-              <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="55"/>
-            </svg>
-            <div class="ring-center">
-              <div class="ring-kcal" id="ring-kcal">—</div>
-              <div class="ring-label" id="ring-label">ккал сегодня</div>
-            </div>
-          </div>
-          <div class="macro-mini">
-            <div class="macro-mini-item">
-              <div class="macro-dot" style="background:#66bb6a"></div>
-              Белки <span id="m-protein">—</span>г
-              <div class="macro-mini-bar"><div class="macro-mini-bar-fill" id="bar-protein" style="width:0%;background:#66bb6a"></div></div>
-            </div>
-            <div class="macro-mini-item">
-              <div class="macro-dot" style="background:#ffa726"></div>
-              Жиры <span id="m-fat">—</span>г
-              <div class="macro-mini-bar"><div class="macro-mini-bar-fill" id="bar-fat" style="width:0%;background:#ffa726"></div></div>
-            </div>
-            <div class="macro-mini-item">
-              <div class="macro-dot" style="background:rgba(255,255,255,0.9)"></div>
-              Углеводы <span id="m-carbs">—</span>г
-              <div class="macro-mini-bar"><div class="macro-mini-bar-fill" id="bar-carbs" style="width:0%;background:rgba(255,255,255,0.85)"></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+@app.get("/recent-meals")
+async def recent_meals():
+    db = await get_db()
+    try:
+        rows = await db.fetch("""
+            SELECT m.dish_name, m.calories_kcal, m.protein_g, m.fat_g, m.carbs_g,
+                   m.weight_g, m.eaten_at, u.username
+            FROM meals m
+            JOIN users u ON m.user_id = u.id
+            ORDER BY m.eaten_at DESC
+            LIMIT 100
+        """)
+        return [dict(r) for r in rows]
+    finally:
+        await db.close()
 
-    <div class="date-nav">
-      <button class="glass" id="btn-prev">‹</button>
-      <div class="date-today" id="date-label">Сегодня</div>
-      <button class="glass" id="btn-next">›</button>
-    </div>
 
-    <div class="xp-card glass-card" id="xp-card" style="display:none">
-      <div class="xp-emoji" id="xp-emoji">🥚</div>
-      <div class="xp-info">
-        <div class="xp-level-name" id="xp-level-name">—</div>
-        <div class="xp-bar-wrap"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
-        <div class="xp-pts" id="xp-pts">— XP</div>
-      </div>
-    </div>
+@app.get("/users")
+async def users():
+    db = await get_db()
+    try:
+        rows = await db.fetch("""
+            SELECT
+                u.id, u.username, u.first_name, u.last_name, u.created_at,
+                u.gender, u.age, u.height_cm, u.weight_kg,
+                u.goal, u.activity, u.calorie_goal,
+                u.xp, u.level, u.streak_days,
+                u.onboarding_done,
+                COUNT(m.id) as meal_count,
+                COALESCE(SUM(CASE WHEN DATE(m.eaten_at) = CURRENT_DATE THEN m.calories_kcal END), 0) as kcal_today,
+                COALESCE(SUM(m.calories_kcal), 0) as kcal_total,
+                MAX(m.eaten_at) as last_meal,
+                COUNT(CASE WHEN DATE(m.eaten_at) = CURRENT_DATE THEN 1 END) > 0 as active_today
+            FROM users u
+            LEFT JOIN meals m ON u.id = m.user_id
+            GROUP BY u.id
+            ORDER BY meal_count DESC
+        """)
+        return [dict(r) for r in rows]
+    finally:
+        await db.close()
 
-    <div class="section-title">Приёмы пищи</div>
-    <div id="diary-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
-    <div class="meal-list" id="meal-list" style="display:none"></div>
 
-    <button class="add-btn" onclick="Telegram?.WebApp?.close()">
-      <span style="font-size:20px">📷</span> Добавить приём пищи
-    </button>
+@app.get("/kbju-avg")
+async def kbju_avg():
+    db = await get_db()
+    try:
+        row = await db.fetchrow("""
+            SELECT AVG(protein_g) as protein_g, AVG(fat_g) as fat_g, AVG(carbs_g) as carbs_g
+            FROM meals WHERE eaten_at >= NOW() - INTERVAL '7 days'
+        """)
+        return {
+            "protein_g": round(row["protein_g"] or 0, 1),
+            "fat_g":     round(row["fat_g"] or 0, 1),
+            "carbs_g":   round(row["carbs_g"] or 0, 1),
+        }
+    finally:
+        await db.close()
 
-    <div class="weekly-card glass-card" id="weekly-card" style="display:none">
-      <div class="weekly-title">Активность за неделю</div>
-      <div class="weekly-bars" id="weekly-bars"></div>
-    </div>
-  </div>
 
-  <!-- ANALYTICS -->
-  <div class="page" id="page-analytics">
-    <div class="page-header">
-      <div class="header-top">
-        <div class="logo-wrap">
-          <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
-          <div class="logo-text">YummyTo<span>Аналитика</span></div>
-        </div>
-      </div>
-      <div class="page-title">📊 Анализ питания</div>
-    </div>
-    <div id="analytics-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
-    <div class="analytics-grid" id="analytics-content" style="display:none">
-      <div class="an-card glass-card">
-        <div class="an-title">КБЖУ за 7 дней (среднее)</div>
-        <div class="kbju-row">
-          <div class="kbju-item">
-            <div class="donut-wrap">
-              <svg viewBox="0 0 60 60" width="72" height="72">
-                <circle class="donut-bg" cx="30" cy="30" r="26" stroke="rgba(102,187,106,.2)"/>
-                <circle class="donut-fill" id="d-protein" cx="30" cy="30" r="26" stroke="#66bb6a"/>
-              </svg>
-              <div class="donut-label"><div class="donut-val" id="dv-protein" style="color:#388e3c">—</div><div class="donut-unit">г</div></div>
-            </div>
-            <div class="kbju-name" style="color:#388e3c">Белки</div>
-          </div>
-          <div class="kbju-item">
-            <div class="donut-wrap">
-              <svg viewBox="0 0 60 60" width="72" height="72">
-                <circle class="donut-bg" cx="30" cy="30" r="26" stroke="rgba(255,167,38,.2)"/>
-                <circle class="donut-fill" id="d-fat" cx="30" cy="30" r="26" stroke="#ffa726"/>
-              </svg>
-              <div class="donut-label"><div class="donut-val" id="dv-fat" style="color:#e65100">—</div><div class="donut-unit">г</div></div>
-            </div>
-            <div class="kbju-name" style="color:#e65100">Жиры</div>
-          </div>
-          <div class="kbju-item">
-            <div class="donut-wrap">
-              <svg viewBox="0 0 60 60" width="72" height="72">
-                <circle class="donut-bg" cx="30" cy="30" r="26" stroke="rgba(41,182,246,.2)"/>
-                <circle class="donut-fill" id="d-carbs" cx="30" cy="30" r="26" stroke="#29b6f6"/>
-              </svg>
-              <div class="donut-label"><div class="donut-val" id="dv-carbs" style="color:#0277bd">—</div><div class="donut-unit">г</div></div>
-            </div>
-            <div class="kbju-name" style="color:#0277bd">Углеводы</div>
-          </div>
-        </div>
-      </div>
-      <div class="an-card glass-card">
-        <div class="an-title">Калории по дням (14 дней)</div>
-        <div class="line-chart-wrap">
-          <svg class="line-chart-svg" id="line-chart" height="120"></svg>
-        </div>
-      </div>
-      <div class="an-card glass-card">
-        <div class="an-title">🍽 Топ-10 блюд</div>
-        <div id="top-dishes"></div>
-      </div>
-    </div>
-  </div>
+@app.get("/analytics")
+async def analytics():
+    db = await get_db()
+    try:
+        days = await db.fetch("""
+            SELECT DATE(eaten_at) as day,
+                   AVG(calories_kcal) as avg_kcal,
+                   AVG(protein_g) as avg_protein,
+                   AVG(fat_g) as avg_fat,
+                   AVG(carbs_g) as avg_carbs
+            FROM meals
+            WHERE eaten_at >= NOW() - INTERVAL '14 days'
+            GROUP BY DATE(eaten_at)
+            ORDER BY day
+        """)
+        dishes = await db.fetch("""
+            SELECT dish_name, COUNT(*) as cnt
+            FROM meals
+            GROUP BY dish_name
+            ORDER BY cnt DESC
+            LIMIT 10
+        """)
+        return {
+            "days": [{"day": str(r["day"]), "avg_kcal": round(r["avg_kcal"] or 0),
+                      "avg_protein": round(r["avg_protein"] or 0),
+                      "avg_fat": round(r["avg_fat"] or 0),
+                      "avg_carbs": round(r["avg_carbs"] or 0)} for r in days],
+            "top_dishes": [{"dish_name": r["dish_name"], "cnt": r["cnt"]} for r in dishes],
+        }
+    finally:
+        await db.close()
 
-  <!-- LEADERBOARD -->
-  <div class="page" id="page-leaderboard">
-    <div class="page-header">
-      <div class="header-top">
-        <div class="logo-wrap">
-          <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
-          <div class="logo-text">YummyTo<span>Рейтинг</span></div>
-        </div>
-        <div class="sw" id="lb-sw">
-          <div class="sw-thumb" id="lb-thumb"></div>
-          <button class="sw-item active" onclick="lbSel(0)">⚡️</button>
-          <button class="sw-item" onclick="lbSel(1)">🍔</button>
-          <button class="sw-item" onclick="lbSel(2)">🥗</button>
-        </div>
-      </div>
-    </div>
-    <div id="lb-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
-    <div class="lb-wrap" id="lb-wrap" style="display:none">
-      <div class="lb-section-title" id="lb-title">⚡️ Топ XP</div>
-      <div class="lb-slides-outer">
-        <div class="lb-slides" id="lb-slides">
-          <div class="lb-slide lb-list" id="lb-list-xp"></div>
-          <div class="lb-slide lb-list" id="lb-list-fat"></div>
-          <div class="lb-slide lb-list" id="lb-list-thin"></div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- PROFILE -->
-  <div class="page" id="page-profile">
-    <div class="page-header">
-      <div class="header-top">
-        <div class="logo-wrap">
-          <img src="logo.png" alt="🍉" style="width:44px;height:44px;border-radius:14px;"/>
-          <div class="logo-text">YummyTo<span>Профиль</span></div>
-        </div>
-      </div>
-      <div class="page-title">👤 Мой профиль</div>
-    </div>
-    <div id="profile-loader" class="loader"><div class="spinner"></div> Загрузка...</div>
-    <div class="profile-content" id="profile-content" style="display:none">
-      <div class="profile-hero glass-card">
-        <div class="profile-avatar" id="p-avatar">🥚</div>
-        <div class="profile-name" id="p-name">—</div>
-        <div class="profile-level" id="p-level">—</div>
-        <div class="profile-xp-bar-wrap"><div class="profile-xp-bar-fill" id="p-xp-bar" style="width:0%"></div></div>
-        <div class="profile-xp-txt" id="p-xp-txt">— XP</div>
-      </div>
-      <div class="stats-grid" id="stats-grid"></div>
-      <div class="goals-card glass-card">
-        <div class="goals-title">Мои цели и параметры</div>
-        <div id="goals-rows"></div>
-      </div>
-      <div class="goals-card glass-card">
-        <div class="goals-title">🏅 Достижения</div>
-        <div class="ach-grid" id="ach-grid"></div>
-      </div>
-    </div>
-  </div>
+@app.get("/meals-by-date")
+async def meals_by_date(user_id: str, date: str):
+    try:
+        uid = int(user_id)
+        parsed_date = date_type.fromisoformat(date)  # ← конвертируем
+    except ValueError:
+        return []
+    db = await get_db()
+    try:
+        rows = await db.fetch("""
+            SELECT m.id, m.dish_name, m.calories_kcal, m.protein_g, m.fat_g,
+                   m.carbs_g, m.weight_g, m.eaten_at
+            FROM meals m
+            WHERE m.user_id = $1 AND DATE(m.eaten_at) = $2
+            ORDER BY m.eaten_at
+        """, uid, parsed_date)
 
-</div>
+        result = []
+        for r in rows:
+            meal = {
+                "id": r["id"],
+                "dish_name": r["dish_name"],
+                "calories_kcal": float(r["calories_kcal"] or 0),
+                "protein_g":     float(r["protein_g"] or 0),
+                "fat_g":         float(r["fat_g"] or 0),
+                "carbs_g":       float(r["carbs_g"] or 0),
+                "weight_g":      float(r["weight_g"] or 0),
+                "eaten_at":      r["eaten_at"].isoformat(),
+                "ingredients":   []
+            }
+            ings = await db.fetch("""
+                SELECT name, weight_g, calories_kcal, protein_g, fat_g, carbs_g
+                FROM meal_ingredients WHERE meal_id = $1
+            """, r["id"])
+            meal["ingredients"] = [
+                {"name": i["name"], "weight_g": float(i["weight_g"] or 0),
+                 "calories_kcal": float(i["calories_kcal"] or 0),
+                 "protein_g": float(i["protein_g"] or 0),
+                 "fat_g": float(i["fat_g"] or 0),
+                 "carbs_g": float(i["carbs_g"] or 0)}
+                for i in ings
+            ]
+            result.append(meal)
+        return result
+    finally:
+        await db.close()
 
-<div class="bottom-nav">
-  <div class="nav-item active" data-page="diary"><div class="nav-icon">📋</div>Дневник</div>
-  <div class="nav-item" data-page="analytics"><div class="nav-icon">📊</div>Анализ</div>
-  <div class="nav-item" data-page="leaderboard"><div class="nav-icon">🏆</div>Рейтинг</div>
-  <div class="nav-item" data-page="profile"><div class="nav-icon">👤</div>Профиль</div>
-</div>
 
-<script>
-const BASE = 'https://yummytobot.duckdns.org/api/';
+@app.get("/leaderboard")
+async def leaderboard():
+    """Топ пользователей по XP и стрикам"""
+    db = await get_db()
+    try:
+        rows = await db.fetch("""
+            SELECT u.id, username, first_name, xp, level, streak_days,
+                   (SELECT COUNT(*) FROM achievements WHERE user_id = u.id) as ach_count
+            FROM users u
+            WHERE onboarding_done = TRUE
+            ORDER BY xp DESC
+            LIMIT 20
+        """)
+        return [dict(r) for r in rows]
+    finally:
+        await db.close()
 
-const $ = id => document.getElementById(id);
-const DAYS_SHORT = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-const LEVELS = [
-  [0,'🥚','Новичок'],[100,'🍗','Едок'],[300,'🥗','Здоровяк'],
-  [700,'💪','Атлет'],[1500,'🏆','Чемпион'],[3000,'👑','Легенда']
-];
-const ACHIEVEMENTS = {
-  first_bite:    ['🍽','Первый укус','Записал первый приём пищи'],
-  streak_3:      ['🔥','Тройка','3 дня стрика подряд'],
-  streak_7:      ['🔥🔥','Недельный воин','7 дней стрика подряд'],
-  streak_30:     ['🔥🔥🔥','Месяц без срыва','30 дней подряд'],
-  photo_10:      ['📸','Фотограф','10 фото еды'],
-  early_bird:    ['🌅','Ранняя пташка','Завтрак до 9:00 три дня'],
-  protein_beast: ['💪','Белковый зверь','Норма белка 3 дня'],
-  goal_done_7:   ['🎯','На цели неделю','7 дней в норме калорий'],
-  hundred_meals: ['🍱','Сотня','100 приёмов пищи'],
-};
 
-// Смещение МСК: UTC+3
-const MSK_OFFSET_MS = 3 * 60 * 60 * 1000;
+@app.get("/achievements")
+async def achievements():
+    """Статистика по ачивкам"""
+    db = await get_db()
+    try:
+        rows = await db.fetch("""
+            SELECT code, COUNT(*) as cnt
+            FROM achievements
+            GROUP BY code
+            ORDER BY cnt DESC
+        """)
+        return [dict(r) for r in rows]
+    finally:
+        await db.close()
 
-function getLevel(xp){
-  let cur=LEVELS[0],nxt=LEVELS[1];
-  for(let i=0;i<LEVELS.length;i++){
-    if(xp>=LEVELS[i][0]){cur=LEVELS[i];nxt=LEVELS[i+1]||null;}
-  }
-  return {emoji:cur[1],name:cur[2],minXp:cur[0],nextXp:nxt?nxt[0]:null};
-}
 
-async function api(path){
-  const r=await fetch(BASE+path);
-  if(!r.ok) throw new Error(r.status);
-  return r.json();
-}
-
-function displayName(u){
-  if(u.first_name && u.first_name.trim()){
-    const parts = u.first_name.trim().split(' ');
-    if(parts.length>=2) return `${parts[0]} ${parts[1][0]}.`;
-    return parts[0];
-  }
-  const clean=(u.username||'Игрок').replace(/^@/,'');
-  if(clean.length<=3) return clean;
-  return clean[0].toUpperCase()+clean.slice(1,3)+'***';
-}
-
-/* ── NAV ── */
-const pageLoaded={};
-document.querySelectorAll('.nav-item').forEach(el=>{
-  el.addEventListener('click',()=>{
-    const pg=el.dataset.page;
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    el.classList.add('active');
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById('page-'+pg).classList.add('active');
-    if(!pageLoaded[pg]){pageLoaded[pg]=true;loadPage(pg);}
-  });
-});
-function loadPage(pg){
-  if(pg==='analytics') loadAnalytics();
-  if(pg==='leaderboard') loadLeaderboard();
-  if(pg==='profile') loadProfile();
-}
-
-/* ── DIARY ── */
-let dateOffset=0;
-function formatDate(offset){const d=new Date();d.setDate(d.getDate()+offset);return d;}
-function dateStr(d){return d.toISOString().split('T')[0];}
-function dateLabelStr(d,offset){
-  if(offset===0) return `Сегодня, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
-  if(offset===-1) return `Вчера, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
-  return `${DAYS_SHORT[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
-}
-
-$('btn-prev').onclick=()=>{dateOffset--;loadDiary();};
-$('btn-next').onclick=()=>{if(dateOffset<0){dateOffset++;loadDiary();}};
-
-const MEAL_ICONS=['🥣','🍳','🥗','🍗','🥩','🍝','🍜','🥘','🥙','🌮','🥪','🍱','🥞','🍚','🍲'];
-function mealIcon(name){
-  const n=name.toLowerCase();
-  if(n.includes('каш')||n.includes('овс')) return '🥣';
-  if(n.includes('яйц')||n.includes('омлет')) return '🍳';
-  if(n.includes('салат')) return '🥗';
-  if(n.includes('кур')||n.includes('грудк')) return '🍗';
-  if(n.includes('рис')) return '🍚';
-  if(n.includes('суп')||n.includes('борщ')) return '🍲';
-  if(n.includes('паст')||n.includes('макар')) return '🍝';
-  if(n.includes('хлеб')||n.includes('бутерброд')) return '🥪';
-  if(n.includes('батончик')||n.includes('протеин')) return '🥜';
-  if(n.includes('банан')||n.includes('яблок')||n.includes('фрукт')) return '🍎';
-  if(n.includes('йогурт')||n.includes('творог')) return '🥛';
-  return MEAL_ICONS[Math.abs(name.charCodeAt(0))%MEAL_ICONS.length];
-}
-
-// Показывает время приёма пищи в московском часовом поясе (UTC+3)
-function mealTimeLabel(isoStr){
-  if(!isoStr) return '';
-  const utcMs = new Date(isoStr).getTime();
-  const msk = new Date(utcMs + MSK_OFFSET_MS);
-  const h = msk.getUTCHours();
-  const m = msk.getUTCMinutes();
-  const t = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-  if(h<11) return `🌅 Завтрак · ${t}`;
-  if(h<14) return `☀️ Обед · ${t}`;
-  if(h<17) return `🌤 Перекус · ${t}`;
-  return `🌙 Ужин · ${t}`;
-}
-
-let _usersCache=null;
-async function getUsers(){
-  if(_usersCache) return _usersCache;
-  _usersCache=await api('users');
-  return _usersCache;
-}
-let _resolvedUid=null;
-async function resolveUserId(){
-  if(_resolvedUid) return _resolvedUid;
-  const tgUser=window.Telegram?.WebApp?.initDataUnsafe?.user;
-  if(tgUser?.username){
-    const users=await getUsers();
-    const found=users.find(u=>u.username===tgUser.username||u.username==='@'+tgUser.username);
-    if(found){_resolvedUid=found.id;return found.id;}
-  }
-  const users=await getUsers();
-  _resolvedUid=users[0]?.id||1;
-  return _resolvedUid;
-}
-async function getUserData(uid){
-  const users=await getUsers();
-  return users.find(u=>u.id===uid)||null;
-}
-async function getCalorieGoal(uid){
-  const u=await getUserData(uid||await resolveUserId());
-  return u?.calorie_goal||2000;
-}
-async function getUserStreak(){
-  try{const uid=await resolveUserId();const u=await getUserData(uid);return u?.streak_days||0;}
-  catch{return 0;}
-}
-
-async function loadDiary(){
-  const d=formatDate(dateOffset);
-  $('date-label').textContent=dateLabelStr(d,dateOffset);
-  try{
-    const streakDays=await getUserStreak();
-    $('streak-badge').textContent=`🔥 ${streakDays} дней`;
-  }catch(e){}
-
-  $('diary-loader').style.display='flex';
-  $('meal-list').style.display='none';
-  try{
-    const uid=await resolveUserId();
-    const meals=await api(`meals-by-date?user_id=${uid}&date=${dateStr(d)}`);
-
-    let totalKcal=0,totalP=0,totalF=0,totalC=0;
-    meals.forEach(m=>{totalKcal+=m.calories_kcal||0;totalP+=m.protein_g||0;totalF+=m.fat_g||0;totalC+=m.carbs_g||0;});
-
-    const goal=await getCalorieGoal(uid);
-    const pct=goal>0?Math.min(totalKcal/goal,1):0;
-    $('ring-fill').style.strokeDashoffset=345-345*pct;
-    $('ring-kcal').textContent=Math.round(totalKcal);
-    $('ring-label').textContent=`из ${goal}`;
-    $('m-protein').textContent=Math.round(totalP);
-    $('m-fat').textContent=Math.round(totalF);
-    $('m-carbs').textContent=Math.round(totalC);
-    $('bar-protein').style.width=Math.min(totalP/100*100,100)+'%';
-    $('bar-fat').style.width=Math.min(totalF/70*100,100)+'%';
-    $('bar-carbs').style.width=Math.min(totalC/250*100,100)+'%';
-
-    const ml=$('meal-list');
-    ml.innerHTML=meals.length===0
-      ?'<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Нет приёмов пищи за этот день 🍽</div>'
-      :meals.map(m=>`
-        <div class="meal-card glass-card">
-          <div class="meal-icon">${mealIcon(m.dish_name)}</div>
-          <div class="meal-info">
-            <div class="meal-name">${m.dish_name}</div>
-            <div class="meal-time">${mealTimeLabel(m.eaten_at)}</div>
-            <div class="meal-macros">
-              <span class="macro-tag tag-p">Б ${Math.round(m.protein_g)}г</span>
-              <span class="macro-tag tag-f">Ж ${Math.round(m.fat_g)}г</span>
-              <span class="macro-tag tag-c">У ${Math.round(m.carbs_g)}г</span>
-            </div>
-          </div>
-          <div class="meal-kcal">${Math.round(m.calories_kcal)}<br><span style="font-size:11px;color:var(--muted);font-weight:700">ккал</span></div>
-        </div>`).join('');
-
-    $('diary-loader').style.display='none';
-    ml.style.display='flex';
-
-    const user=await getUserData(uid);
-    if(user){
-      const lv=getLevel(user.xp||0);
-      $('xp-emoji').textContent=lv.emoji;
-      $('xp-level-name').textContent=`${lv.emoji} ${lv.name} · Ур. ${user.level||1}`;
-      const pctXP=lv.nextXp?Math.min((user.xp-lv.minXp)/(lv.nextXp-lv.minXp),1)*100:100;
-      $('xp-bar').style.width=pctXP+'%';
-      $('xp-pts').textContent=`${user.xp} / ${lv.nextXp||'MAX'} XP`;
-      $('xp-card').style.display='flex';
-    }
-  }catch(e){
-    $('diary-loader').innerHTML=`<div class="error-msg">Ошибка загрузки данных. Проверьте подключение.</div>`;
-  }
-
-  try{
-    const act=await api('activity');
-    const wb=$('weekly-bars');
-    const today=new Date();
-    const maxCnt=Math.max(...act.map(a=>a.count),1);
-    const days7=[];
-    for(let i=6;i>=0;i--){const d2=new Date(today);d2.setDate(today.getDate()-i);days7.push(d2);}
-    wb.innerHTML=days7.map((d2,i)=>{
-      const ds=dateStr(d2);
-      const row=act.find(a=>a.day===ds);
-      const cnt=row?row.count:0;
-      const h=Math.max(cnt/maxCnt*100,4);
-      const isT=i===6;
-      return `<div class="day-col">
-        <div class="day-bar-wrap"><div class="day-bar${isT?' today':''}" style="height:${h}%"></div></div>
-        <div class="day-label${isT?' today':''}">${DAYS_SHORT[d2.getDay()]}</div>
-      </div>`;
-    }).join('');
-    $('weekly-card').style.display='block';
-  }catch(e){}
-}
-
-/* ── ANALYTICS ── */
-async function loadAnalytics(){
-  try{
-    const [kbju,an]=await Promise.all([api('kbju-avg'),api('analytics')]);
-    const maxMacro=Math.max(kbju.protein_g,kbju.fat_g,kbju.carbs_g,1);
-    function setDonut(id,valId,val,max){
-      const off=188-Math.min(val/max,1)*188;
-      document.getElementById(id).style.strokeDashoffset=off;
-      document.getElementById(valId).textContent=Math.round(val);
-    }
-    setDonut('d-protein','dv-protein',kbju.protein_g,maxMacro);
-    setDonut('d-fat','dv-fat',kbju.fat_g,maxMacro);
-    setDonut('d-carbs','dv-carbs',kbju.carbs_g,maxMacro);
-
-    const days=an.days;
-    if(days.length>1){
-      const W=Math.max(document.querySelector('.line-chart-wrap').clientWidth||300,300);
-      const H=120,PAD=16;
-      const maxK=Math.max(...days.map(d=>d.avg_kcal),1);
-      const xStep=(W-PAD*2)/(days.length-1);
-      const yOf=d=>PAD+(1-d.avg_kcal/maxK)*(H-PAD*2);
-      const pts=days.map((d,i)=>`${PAD+i*xStep},${yOf(d)}`).join(' ');
-      const area=`M${PAD},${H} `+days.map((d,i)=>`L${PAD+i*xStep},${yOf(d)}`).join(' ')+` L${PAD+(days.length-1)*xStep},${H} Z`;
-      const svg=$('line-chart');
-      svg.setAttribute('width',W);
-      svg.innerHTML=`
-        <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#29b6f6" stop-opacity=".35"/>
-          <stop offset="100%" stop-color="#29b6f6" stop-opacity="0"/>
-        </linearGradient></defs>
-        <path d="${area}" fill="url(#lg)"/>
-        <polyline points="${pts}" fill="none" stroke="#0288d1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        ${days.map((d,i)=>`<circle cx="${PAD+i*xStep}" cy="${yOf(d)}" r="4" fill="#0288d1"/>`).join('')}
-        ${days.map((d,i)=>{
-          if(i%3!==0) return '';
-          return `<text x="${PAD+i*xStep}" y="${yOf(d)-8}" text-anchor="middle" font-size="9" fill="#6b8fa8" font-family="Nunito" font-weight="700">${d.avg_kcal}</text>`;
-        }).join('')}`;
-    }
-
-    const maxCnt=Math.max(...an.top_dishes.map(d=>d.cnt),1);
-    const MEDALS=['🥇','🥈','🥉'];
-    $('top-dishes').innerHTML=an.top_dishes.map((d,i)=>`
-      <div class="dish-row">
-        <div class="dish-rank">${MEDALS[i]||`${i+1}`}</div>
-        <div class="dish-name-txt">${d.dish_name}</div>
-        <div class="dish-bar-wrap"><div class="dish-bar-fill" style="width:${d.cnt/maxCnt*100}%"></div></div>
-        <div class="dish-cnt">${d.cnt}×</div>
-      </div>`).join('');
-
-    $('analytics-loader').style.display='none';
-    $('analytics-content').style.display='flex';
-  }catch(e){
-    $('analytics-loader').innerHTML=`<div class="error-msg">Ошибка загрузки аналитики.</div>`;
-  }
-}
-
-/* ── LEADERBOARD ── */
-let _lbIdx = 0;
-const LB_TITLES = ['⚡️ Топ XP', '🍔 Топ жирдяев за сегодня', '🥗 Топ анорексичек за сегодня'];
-
-function lbSel(idx){
-  _lbIdx = idx;
-  const items = document.querySelectorAll('#lb-sw .sw-item');
-  const thumb = $('lb-thumb');
-  const w = items[0].offsetWidth;
-  items.forEach((b,i)=>b.classList.toggle('active',i===idx));
-  thumb.style.transform = `translateX(${idx*w}px)`;
-  $('lb-slides').style.transform = `translateX(${-idx*100}%)`;
-  $('lb-title').textContent = LB_TITLES[idx];
-}
-
-async function loadLeaderboard(){
-  try{
-    const myUid = await resolveUserId();
-    const tgU   = window.Telegram?.WebApp?.initDataUnsafe?.user;
-    const myUsername = tgU?.username || '';
-    const [xpRows, allUsers] = await Promise.all([api('leaderboard'), api('users')]);
-    const MEDALS=['🥇','🥈','🥉'];
-
-    $('lb-list-xp').innerHTML = xpRows.map((u,i)=>{
-      const lv=getLevel(u.xp||0);
-      const me=String(u.id)===String(myUid)||String(u.username)===String(myUsername);
-      return `<div class="lb-card glass-card${me?' lb-me':''}">
-        <div class="lb-rank">${MEDALS[i]||i+1}</div>
-        <div class="lb-info">
-          <div class="lb-username">${displayName(u)}${me?'<span class="lb-you-badge">ты</span>':''}</div>
-          <div class="lb-meta">🔥 ${u.streak_days} дней · 🏅 ${u.ach_count} ачивок</div>
-          <span class="lb-level-badge">${lv.emoji} ${lv.name}</span>
-        </div>
-        <div class="lb-right">
-          <div class="lb-xp">${u.xp}</div>
-          <div class="lb-xp-label">XP</div>
-        </div>
-      </div>`;
-    }).join('');
-
-    const fat = [...allUsers].filter(u=>u.kcal_today>0).sort((a,b)=>b.kcal_today-a.kcal_today).slice(0,10);
-    $('lb-list-fat').innerHTML = fat.length ? fat.map((u,i)=>{
-      const me=String(u.id)===String(myUid)||String(u.username)===String(myUsername);
-      return `<div class="lb-card glass-card${me?' lb-me':''}">
-        <div class="lb-rank">${MEDALS[i]||i+1}</div>
-        <div class="lb-info">
-          <div class="lb-username">${displayName(u)}${me?'<span class="lb-you-badge">ты</span>':''}</div>
-          <div class="lb-meta">🍔 Сегодня</div>
-        </div>
-        <div class="lb-right">
-          <div class="lb-xp" style="color:var(--orange)">${Math.round(u.kcal_today)}</div>
-          <div class="lb-xp-label">ккал</div>
-        </div>
-      </div>`;}).join('')
-    : '<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
-
-    const thin = [...allUsers].filter(u=>u.kcal_today>0).sort((a,b)=>a.kcal_today-b.kcal_today).slice(0,10);
-    $('lb-list-thin').innerHTML = thin.length ? thin.map((u,i)=>{
-      const me=String(u.id)===String(myUid)||String(u.username)===String(myUsername);
-      return `<div class="lb-card glass-card${me?' lb-me':''}">
-        <div class="lb-rank">${MEDALS[i]||i+1}</div>
-        <div class="lb-info">
-          <div class="lb-username">${displayName(u)}${me?'<span class="lb-you-badge">ты</span>':''}</div>
-          <div class="lb-meta">🥗 Сегодня</div>
-        </div>
-        <div class="lb-right">
-          <div class="lb-xp" style="color:var(--green)">${Math.round(u.kcal_today)}</div>
-          <div class="lb-xp-label">ккал</div>
-        </div>
-      </div>`;}).join('')
-    : '<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
-
-    $('lb-loader').style.display='none';
-    $('lb-wrap').style.display='block';
-
-    requestAnimationFrame(()=>{
-      const items = document.querySelectorAll('#lb-sw .sw-item');
-      if(items[0]) $('lb-thumb').style.width = items[0].offsetWidth+'px';
-    });
-  }catch(e){
-    $('lb-loader').innerHTML=`<div class="error-msg">Ошибка загрузки рейтинга.</div>`;
-  }
-}
-
-/* ── PROFILE ── */
-async function loadProfile(){
-  try{
-    const uid=await resolveUserId();
-    const u=await getUserData(uid);
-    if(!u) throw new Error('no user');
-
-    const lv=getLevel(u.xp||0);
-    const pctXP=lv.nextXp?Math.min((u.xp-lv.minXp)/(lv.nextXp-lv.minXp),1)*100:100;
-
-    $('p-avatar').textContent=lv.emoji;
-    $('p-name').textContent=u.first_name||`@${u.username}`;
-    $('p-level').textContent=`${lv.emoji} ${lv.name} · Уровень ${u.level||1}`;
-    $('p-xp-bar').style.width=pctXP+'%';
-    $('p-xp-txt').textContent=`${u.xp} / ${lv.nextXp||'MAX'} XP`;
-
-    const stats=[
-      ['🍽',u.meal_count,'Приёмов пищи'],
-      ['🔥',u.streak_days,'Дней стрика'],
-      ['⚡',Math.round(u.kcal_today),'Ккал сегодня'],
-      ['📊',Math.round(u.kcal_total),'Ккал всего'],
-    ];
-    $('stats-grid').innerHTML=stats.map(([ic,val,lbl])=>`
-      <div class="stat-item glass-card">
-        <div style="font-size:28px">${ic}</div>
-        <div class="stat-val">${val??'—'}</div>
-        <div class="stat-label">${lbl}</div>
-      </div>`).join('');
-
-    const GOAL_LABELS={lose_weight:'Похудение',gain_weight:'Набор массы',maintain:'Поддержание'};
-    const ACT_LABELS={low:'Низкая',medium:'Средняя',high:'Высокая'};
-    const goals=[
-      ['Пол',u.gender==='male'?'Мужской':'Женский'],
-      ['Возраст',u.age?`${u.age} лет`:'—'],
-      ['Рост',u.height_cm?`${u.height_cm} см`:'—'],
-      ['Вес',u.weight_kg?`${u.weight_kg} кг`:'—'],
-      ['Цель',GOAL_LABELS[u.goal]||u.goal||'—'],
-      ['Активность',ACT_LABELS[u.activity]||u.activity||'—'],
-      ['Норма калорий',u.calorie_goal?`${u.calorie_goal} ккал`:'—'],
-    ];
-    $('goals-rows').innerHTML=goals.map(([k,v])=>`
-      <div class="goal-row">
-        <div class="goal-key">${k}</div>
-        <div class="goal-val">${v}</div>
-      </div>`).join('');
-
-    const achData=await api('achievements');
-    const earned=new Set(achData.map(a=>a.code));
-    $('ach-grid').innerHTML=Object.entries(ACHIEVEMENTS).map(([code,[ico,name,desc]])=>`
-      <div class="ach-item glass-card${earned.has(code)?'':' locked'}">
-        <div class="ach-icon">${ico}</div>
-        <div class="ach-info">
-          <div class="ach-name">${name}</div>
-          <div class="ach-desc">${desc}</div>
-        </div>
-      </div>`).join('');
-
-    $('profile-loader').style.display='none';
-    $('profile-content').style.display='flex';
-  }catch(e){
-    $('profile-loader').innerHTML=`<div class="error-msg">Ошибка загрузки профиля.</div>`;
-  }
-}
-
-/* ── INIT ── */
-if(window.Telegram?.WebApp){Telegram.WebApp.ready();Telegram.WebApp.expand();}
-loadDiary();
-</script>
-</body>
-</html>
+@app.delete("/meals/{meal_id}")
+async def delete_meal(meal_id: int):
+    db = await get_db()
+    try:
+        await db.execute("DELETE FROM meals WHERE id = $1", meal_id)
+        return {"ok": True}
+    finally:
+        await db.close()
