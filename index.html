@@ -593,8 +593,20 @@ function loadPage(pg){
 }
 
 /* ── DIARY ── */
+/* ── МСК (UTC+3) ── */
+function nowMSK(){
+  const now=new Date();
+  // смещение МСК в минутах = +180; локальное смещение в минутах = -getTimezoneOffset()
+  const mskOffsetMs=(3*60+now.getTimezoneOffset())*60*1000;
+  return new Date(now.getTime()+mskOffsetMs);
+}
+function toMSK(d){
+  const mskOffsetMs=(3*60+d.getTimezoneOffset())*60*1000;
+  return new Date(d.getTime()+mskOffsetMs);
+}
+
 let dateOffset=0;
-function formatDate(offset){const d=new Date();d.setDate(d.getDate()+offset);return d;}
+function formatDate(offset){const d=nowMSK();d.setDate(d.getDate()+offset);return d;}
 function dateStr(d){
   const y=d.getFullYear();
   const m=String(d.getMonth()+1).padStart(2,'0');
@@ -628,7 +640,7 @@ function mealIcon(name){
 }
 function mealTimeLabel(isoStr){
   if(!isoStr) return '';
-  const d=new Date(isoStr);
+  const d=toMSK(new Date(isoStr));
   const h=d.getHours();
   const t=`${String(h).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   if(h<11) return `🌅 Завтрак · ${t}`;
