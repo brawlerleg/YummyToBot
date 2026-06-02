@@ -770,7 +770,7 @@ async function loadDiary(){
   try{
     const act=await api('activity');
     const wb=$('weekly-bars');
-    const today=new Date();
+    const today=nowMSK();
     const maxCnt=Math.max(...act.map(a=>a.count),1);
     const days7=[];
     for(let i=6;i>=0;i--){const d2=new Date(today);d2.setDate(today.getDate()-i);days7.push(d2);}
