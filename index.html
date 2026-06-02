@@ -526,9 +526,12 @@ function mealIcon(name){
 }
 function mealTimeLabel(isoStr){
   if(!isoStr) return '';
-  const d=new Date(isoStr);
-  const h=d.getHours();
-  const t=`${String(h).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  // Всегда показываем время в МСК (UTC+3), независимо от тайм-зоны устройства
+  const utcMs = new Date(isoStr).getTime();
+  const msk = new Date(utcMs + 3 * 60 * 60 * 1000);
+  const h = msk.getUTCHours();
+  const m = msk.getUTCMinutes();
+  const t = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
   if(h<11) return `🌅 Завтрак · ${t}`;
   if(h<14) return `☀️ Обед · ${t}`;
   if(h<17) return `🌤 Перекус · ${t}`;
@@ -545,10 +548,18 @@ let _resolvedUid=null;
 async function resolveUserId(){
   if(_resolvedUid) return _resolvedUid;
   const tgUser=window.Telegram?.WebApp?.initDataUnsafe?.user;
-  if(tgUser?.username){
+  if(tgUser){
     const users=await getUsers();
-    const found=users.find(u=>u.username===tgUser.username||u.username==='@'+tgUser.username);
-    if(found){_resolvedUid=found.id;return found.id;}
+    // Сначала ищем по Telegram ID (надёжнее всего)
+    if(tgUser.id){
+      const byId=users.find(u=>String(u.tg_id)===String(tgUser.id)||String(u.telegram_id)===String(tgUser.id)||String(u.id)===String(tgUser.id));
+      if(byId){_resolvedUid=byId.id;return byId.id;}
+    }
+    // Затем по username
+    if(tgUser.username){
+      const byUsername=users.find(u=>u.username===tgUser.username||u.username==='@'+tgUser.username);
+      if(byUsername){_resolvedUid=byUsername.id;return byUsername.id;}
+    }
   }
   const users=await getUsers();
   _resolvedUid=users[0]?.id||1;
