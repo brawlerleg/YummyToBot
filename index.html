@@ -938,6 +938,7 @@ function renderLbTab(idx,d){
   const lists=[$('lb-list-xp'),$('lb-list-fat'),$('lb-list-thin')];
   const container=lists[idx];
   const page=$('page-leaderboard');
+  page.scrollTop=0;
 
   let arr,colorStyle='',metaText,valFn,label;
   if(idx===0){
