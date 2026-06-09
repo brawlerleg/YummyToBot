@@ -901,7 +901,6 @@ function lbSel(idx){
   $('lb-slides').style.transform=`translateX(${-idx*100}%)`;
   $('lb-title').textContent=LB_TITLES[idx];
   if(_lbData) renderLbTab(idx,_lbData);
-  setTimeout(scrollToMe,400);
 }
 
 // Свайп между табами
@@ -935,43 +934,84 @@ function lbSel(idx){
 
 function renderLbTab(idx,d){
   const MEDALS=['🥇','🥈','🥉'];
-  const badge=(me)=>me?'<span class="lb-you-badge">ты</span>':'';
+  const badge=me=>me?'<span class="lb-you-badge">ты</span>':'';
   const lists=[$('lb-list-xp'),$('lb-list-fat'),$('lb-list-thin')];
-  
-  let arr,colorStyle='',metaText='',valFn;
+  const container=lists[idx];
+  const page=$('page-leaderboard');
+
+  let arr,colorStyle='',metaText,valFn,label;
   if(idx===0){
     arr=[...d.all].sort((a,b)=>(b.xp||0)-(a.xp||0));
-    valFn=u=>u.xp||0; metaText=u=>`🔥 ${u.streak_days||0} дней · Ур. ${u.level||1}`;
+    valFn=u=>u.xp||0; metaText=u=>`🔥 ${u.streak_days||0} дней · Ур. ${u.level||1}`; label='XP';
   } else if(idx===1){
     arr=[...d.all].filter(u=>u.kcal_today>0).sort((a,b)=>b.kcal_today-a.kcal_today);
-    colorStyle='color:var(--orange)'; valFn=u=>Math.round(u.kcal_today); metaText=()=>'🍔 Сегодня';
+    colorStyle='color:var(--orange)'; valFn=u=>Math.round(u.kcal_today); metaText=()=>'🍔 Сегодня'; label='ккал';
   } else {
     arr=[...d.all].filter(u=>u.kcal_today>0).sort((a,b)=>a.kcal_today-b.kcal_today);
-    colorStyle='color:var(--green)'; valFn=u=>Math.round(u.kcal_today); metaText=()=>'🥗 Сегодня';
+    colorStyle='color:var(--green)'; valFn=u=>Math.round(u.kcal_today); metaText=()=>'🥗 Сегодня'; label='ккал';
   }
 
   if(!arr.length){
-    lists[idx].innerHTML='<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
+    container.innerHTML='<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
     return;
   }
 
-  lists[idx].innerHTML=arr.map((u,i)=>{
+  function card(u,i){
     const me=String(u.id)===String(d.myUid)||String(u.username)===String(d.myUsername);
     const lv=getLevel(u.xp||0);
-    const levelBadge=idx===0?`<span class="lb-level-badge">${lv.emoji} ${lv.name}</span>`:'';
+    const lvBadge=idx===0?`<span class="lb-level-badge">${lv.emoji} ${lv.name}</span>`:'';
     return `<div class="lb-card glass-card${me?' lb-me':''}">
       <div class="lb-rank">${MEDALS[i]||i+1}</div>
       <div class="lb-info">
         <div class="lb-username">${displayName(u)}${badge(me)}</div>
         <div class="lb-meta">${metaText(u)}</div>
-        ${levelBadge}
+        ${lvBadge}
       </div>
       <div class="lb-right">
         <div class="lb-xp"${colorStyle?' style="'+colorStyle+'"':''}>${valFn(u)}</div>
-        <div class="lb-xp-label">${idx===0?'XP':'ккал'}</div>
+        <div class="lb-xp-label">${label}</div>
       </div>
     </div>`;
-  }).join('');
+  }
+
+  // Фаза 1: рендерим только ±12 карточек вокруг себя
+  const myIdx=Math.max(0,arr.findIndex(u=>String(u.id)===String(d.myUid)));
+  const WIN=12;
+  const start=Math.max(0,myIdx-WIN);
+  const end=Math.min(arr.length,myIdx+WIN+1);
+
+  container.innerHTML=arr.slice(start,end).map((u,i)=>card(u,start+i)).join('');
+
+  // Мгновенно ставим камеру на свою карточку
+  requestAnimationFrame(()=>{
+    const myCard=container.querySelector('.lb-me');
+    if(myCard){
+      const headerH=page.querySelector('.page-header')?.offsetHeight||0;
+      page.scrollTop=myCard.offsetTop-headerH-page.clientHeight/2+myCard.offsetHeight/2;
+    }
+
+    // Фаза 2: дорисовываем остальное через 80мс
+    setTimeout(()=>{
+      const marker=container.firstElementChild;
+      const offsetBefore=marker?marker.offsetTop:0;
+
+      // Вставляем карточки выше
+      if(start>0){
+        container.insertAdjacentHTML('afterbegin',
+          arr.slice(0,start).map((u,i)=>card(u,i)).join(''));
+      }
+      // Вставляем карточки ниже
+      if(end<arr.length){
+        container.insertAdjacentHTML('beforeend',
+          arr.slice(end).map((u,i)=>card(u,end+i)).join(''));
+      }
+
+      // Корректируем скролл — карточки сверху сдвинули всё вниз
+      if(start>0 && marker){
+        page.scrollTop+=marker.offsetTop-offsetBefore;
+      }
+    },80);
+  });
 }
 
 async function loadLeaderboard(){
