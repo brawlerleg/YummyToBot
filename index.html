@@ -987,9 +987,8 @@ function renderLbTab(idx,d){
   requestAnimationFrame(()=>{
     const myCard=container.querySelector('.lb-me');
     if(myCard){
-      const cardRect=myCard.getBoundingClientRect();
-      const pageRect=page.getBoundingClientRect();
-      page.scrollTop+=cardRect.top-pageRect.top-page.clientHeight/2+cardRect.height/2;
+      const headerH=page.querySelector('.page-header')?.offsetHeight||0;
+      page.scrollTop=myCard.offsetTop-headerH-page.clientHeight/2+myCard.offsetHeight/2;
     }
 
     // Фаза 2: дорисовываем остальное через 80мс
