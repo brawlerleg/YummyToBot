@@ -242,6 +242,31 @@
     .ach-name{font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .ach-desc{font-size:11px;font-weight:600;color:var(--muted);margin-top:1px;}
     .ach-item.locked{opacity:.45;filter:grayscale(1);}
+
+        /* LEADERBOARD STICKY + SCROLL-TOP */
+    #page-leaderboard .page-header{
+      position:sticky;top:0;z-index:10;
+      background:linear-gradient(160deg,#0288d1 0%,#29b6f6 40%,#81d4fa 70%);
+      padding-bottom:8px;
+    }
+    #page-leaderboard .lb-section-title{
+      position:sticky;top:0;z-index:9;
+      background:linear-gradient(180deg,rgba(2,136,209,.95) 0%,rgba(41,182,246,.85) 100%);
+      backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      padding:10px 20px;margin:0 -14px;
+    }
+    .scroll-top-btn{
+      position:fixed;bottom:110px;right:16px;z-index:99;
+      width:44px;height:44px;border-radius:50%;border:none;
+      background:rgba(255,255,255,0.85);
+      backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+      box-shadow:0 4px 20px rgba(2,136,209,.3);
+      font-size:20px;cursor:pointer;
+      display:none;align-items:center;justify-content:center;
+      transition:opacity .25s,transform .25s;
+    }
+    .scroll-top-btn.visible{display:flex;}
+    .scroll-top-btn:active{transform:scale(.88);}
   </style>
 </head>
 <body>
@@ -407,9 +432,10 @@
         </div>
       </div>
     </div>
-  </div>
+        <button class="scroll-top-btn" id="lb-scroll-top" onclick="document.getElementById('page-leaderboard').scrollTo({top:0,behavior:'smooth'})">↑</button>
+      </div>
 
-  <!-- PROFILE -->
+      <!-- PROFILE -->
   <div class="page" id="page-profile">
     <div class="page-header">
       <div class="header-top">
@@ -841,15 +867,22 @@ let _lbIdx=0;
 const LB_TITLES=['⚡️ Топ XP','🍔 Топ жирдяев за сегодня','🥗 Топ анорексичек за сегодня'];
 
 function scrollToMe(){
-  const slides=[document.getElementById('lb-list-xp'),document.getElementById('lb-list-fat'),document.getElementById('lb-list-thin')];
+  const slides=[$('lb-list-xp'),$('lb-list-fat'),$('lb-list-thin')];
   const card=slides[_lbIdx]?.querySelector('.lb-me');
   if(!card) return;
-  const page=document.getElementById('page-leaderboard');
+  const page=$('page-leaderboard');
   const cardRect=card.getBoundingClientRect();
   const pageRect=page.getBoundingClientRect();
   const offset=cardRect.top-pageRect.top+page.scrollTop-page.clientHeight/2+cardRect.height/2;
   page.scrollTo({top:Math.max(0,offset),behavior:'smooth'});
 }
+
+// Показ/скрытие кнопки «наверх»
+document.getElementById('page-leaderboard').addEventListener('scroll',function(){
+  const btn=$('lb-scroll-top');
+  if(this.scrollTop>300) btn.classList.add('visible');
+  else btn.classList.remove('visible');
+});
 
 function lbSel(idx){
   _lbIdx=idx;
@@ -863,6 +896,35 @@ function lbSel(idx){
   setTimeout(scrollToMe,400);
 }
 
+// Свайп между табами
+(function(){
+  const outer=document.querySelector('.lb-slides-outer');
+  let startX=0,startY=0,tracking=false,moved=false;
+
+  outer.addEventListener('touchstart',e=>{
+    startX=e.touches[0].clientX;
+    startY=e.touches[0].clientY;
+    tracking=true;moved=false;
+  },{passive:true});
+
+  outer.addEventListener('touchmove',e=>{
+    if(!tracking) return;
+    const dx=e.touches[0].clientX-startX;
+    const dy=e.touches[0].clientY-startY;
+    // Если вертикальный скролл — не перехватываем
+    if(!moved && Math.abs(dy)>Math.abs(dx)){tracking=false;return;}
+    if(Math.abs(dx)>15) moved=true;
+  },{passive:true});
+
+  outer.addEventListener('touchend',e=>{
+    if(!tracking||!moved) return;
+    tracking=false;
+    const dx=e.changedTouches[0].clientX-startX;
+    if(dx<-40 && _lbIdx<2) lbSel(_lbIdx+1);
+    else if(dx>40 && _lbIdx>0) lbSel(_lbIdx-1);
+  },{passive:true});
+})();
+
 async function loadLeaderboard(){
   try{
     const myUid=await resolveUserId();
@@ -872,7 +934,7 @@ async function loadLeaderboard(){
     const MEDALS=['🥇','🥈','🥉'];
     const badge=(me)=>me?'<span class="lb-you-badge">ты</span>':'';
 
-// XP топ — все пользователи, сортировка по xp
+    // XP топ
     const xpSorted=[...allUsers].sort((a,b)=>(b.xp||0)-(a.xp||0));
     $('lb-list-xp').innerHTML=xpSorted.map((u,i)=>{
       const lv=getLevel(u.xp||0);
@@ -925,13 +987,13 @@ async function loadLeaderboard(){
       </div>`;}).join('')
     :'<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
 
-  $('lb-loader').style.display='none';
-      $('lb-wrap').style.display='block';
-      requestAnimationFrame(()=>{
-        const items=document.querySelectorAll('#lb-sw .sw-item');
-        if(items[0]) $('lb-thumb').style.width=items[0].offsetWidth+'px';
-        scrollToMe();
-      });
+    $('lb-loader').style.display='none';
+    $('lb-wrap').style.display='block';
+    requestAnimationFrame(()=>{
+      const items=document.querySelectorAll('#lb-sw .sw-item');
+      if(items[0]) $('lb-thumb').style.width=items[0].offsetWidth+'px';
+      scrollToMe();
+    });
   }catch(e){
     $('lb-loader').innerHTML=`<div class="error-msg">Ошибка загрузки рейтинга.</div>`;
   }
