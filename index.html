@@ -504,17 +504,8 @@ async function api(path){
    и показывает только первое слово с заглавной буквы.
    username никогда не светится полностью. ── */
 function displayName(u){
-  // если API вернул first_name — используем его
-  if(u.first_name && u.first_name.trim()){
-    // показываем имя + первую букву фамилии если есть
-    const parts = u.first_name.trim().split(' ');
-    if(parts.length>=2) return `${parts[0]} ${parts[1][0]}.`;
-    return parts[0];
-  }
-  // fallback: username без @ и только первые символы
-  const clean=(u.username||'Игрок').replace(/^@/,'');
-  if(clean.length<=3) return clean;
-  return clean[0].toUpperCase()+clean.slice(1,3)+'***';
+  if(u.first_name && u.first_name.trim()) return u.first_name.trim();
+  return u.username || 'Игрок';
 }
 
 /* ── NAV ── */
@@ -865,23 +856,24 @@ async function loadLeaderboard(){
     const myUid=await resolveUserId();
     const tgU=window.Telegram?.WebApp?.initDataUnsafe?.user;
     const myUsername=tgU?.username||'';
-    const [xpRows,allUsers]=await Promise.all([api('leaderboard'),api('users')]);
+    const allUsers=await api('users');
     const MEDALS=['🥇','🥈','🥉'];
     const badge=(me)=>me?'<span class="lb-you-badge">ты</span>':'';
 
-    // XP топ
-    $('lb-list-xp').innerHTML=xpRows.map((u,i)=>{
+// XP топ — все пользователи, сортировка по xp
+    const xpSorted=[...allUsers].sort((a,b)=>(b.xp||0)-(a.xp||0));
+    $('lb-list-xp').innerHTML=xpSorted.map((u,i)=>{
       const lv=getLevel(u.xp||0);
       const me=String(u.id)===String(myUid)||String(u.username)===String(myUsername);
       return `<div class="lb-card glass-card${me?' lb-me':''}">
         <div class="lb-rank">${MEDALS[i]||i+1}</div>
         <div class="lb-info">
           <div class="lb-username">${displayName(u)}${badge(me)}</div>
-          <div class="lb-meta">🔥 ${u.streak_days} дней · 🏅 ${u.ach_count} ачивок</div>
+          <div class="lb-meta">🔥 ${u.streak_days||0} дней · Ур. ${u.level||1}</div>
           <span class="lb-level-badge">${lv.emoji} ${lv.name}</span>
         </div>
         <div class="lb-right">
-          <div class="lb-xp">${u.xp}</div>
+          <div class="lb-xp">${u.xp||0}</div>
           <div class="lb-xp-label">XP</div>
         </div>
       </div>`;
