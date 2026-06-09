@@ -840,6 +840,17 @@ async function loadAnalytics(){
 let _lbIdx=0;
 const LB_TITLES=['⚡️ Топ XP','🍔 Топ жирдяев за сегодня','🥗 Топ анорексичек за сегодня'];
 
+function scrollToMe(){
+  const slides=[document.getElementById('lb-list-xp'),document.getElementById('lb-list-fat'),document.getElementById('lb-list-thin')];
+  const card=slides[_lbIdx]?.querySelector('.lb-me');
+  if(!card) return;
+  const page=document.getElementById('page-leaderboard');
+  const cardRect=card.getBoundingClientRect();
+  const pageRect=page.getBoundingClientRect();
+  const offset=cardRect.top-pageRect.top+page.scrollTop-page.clientHeight/2+cardRect.height/2;
+  page.scrollTo({top:Math.max(0,offset),behavior:'smooth'});
+}
+
 function lbSel(idx){
   _lbIdx=idx;
   const items=document.querySelectorAll('#lb-sw .sw-item');
@@ -849,6 +860,7 @@ function lbSel(idx){
   thumb.style.transform=`translateX(${idx*w}px)`;
   $('lb-slides').style.transform=`translateX(${-idx*100}%)`;
   $('lb-title').textContent=LB_TITLES[idx];
+  setTimeout(scrollToMe,400);
 }
 
 async function loadLeaderboard(){
@@ -913,12 +925,13 @@ async function loadLeaderboard(){
       </div>`;}).join('')
     :'<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
 
-    $('lb-loader').style.display='none';
-    $('lb-wrap').style.display='block';
-    requestAnimationFrame(()=>{
-      const items=document.querySelectorAll('#lb-sw .sw-item');
-      if(items[0]) $('lb-thumb').style.width=items[0].offsetWidth+'px';
-    });
+  $('lb-loader').style.display='none';
+      $('lb-wrap').style.display='block';
+      requestAnimationFrame(()=>{
+        const items=document.querySelectorAll('#lb-sw .sw-item');
+        if(items[0]) $('lb-thumb').style.width=items[0].offsetWidth+'px';
+        scrollToMe();
+      });
   }catch(e){
     $('lb-loader').innerHTML=`<div class="error-msg">Ошибка загрузки рейтинга.</div>`;
   }
