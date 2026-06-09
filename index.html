@@ -880,7 +880,7 @@ async function loadLeaderboard(){
     }).join('');
 
     // Жирдяи
-    const fat=[...allUsers].filter(u=>u.kcal_today>0).sort((a,b)=>b.kcal_today-a.kcal_today).slice(0,10);
+    const fat=[...allUsers].filter(u=>u.kcal_today>0).sort((a,b)=>b.kcal_today-a.kcal_today);
     $('lb-list-fat').innerHTML=fat.length?fat.map((u,i)=>{
       const me=String(u.id)===String(myUid)||String(u.username)===String(myUsername);
       return `<div class="lb-card glass-card${me?' lb-me':''}">
@@ -897,7 +897,7 @@ async function loadLeaderboard(){
     :'<div style="padding:20px;text-align:center;color:rgba(255,255,255,.6);font-weight:700">Сегодня никто не ел 🍽</div>';
 
     // Анорексички
-    const thin=[...allUsers].filter(u=>u.kcal_today>0).sort((a,b)=>a.kcal_today-b.kcal_today).slice(0,10);
+    const thin=[...allUsers].filter(u=>u.kcal_today>0).sort((a,b)=>a.kcal_today-b.kcal_today);
     $('lb-list-thin').innerHTML=thin.length?thin.map((u,i)=>{
       const me=String(u.id)===String(myUid)||String(u.username)===String(myUsername);
       return `<div class="lb-card glass-card${me?' lb-me':''}">
